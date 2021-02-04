@@ -459,5 +459,5 @@ bool Calculator::calculate(double rightOperand, const QString &pendingOperator)
 void Calculator::about()
 {
    QMessageBox::about(this, tr("About PiCalcQT"),
-            tr("<b>PiCalcQT</b> is a simple calculator for Raspberry PI writtern in C++ and QT. Build DEV01040221. © 2021 Alexander Mazhirin"));
+            tr("<b>PiCalcQT</b> is a simple calculator for Raspberry PI written in C++ and QT.<br>Build DEV01040221.<br>© 2021 Alexander Mazhirin"));
 }
