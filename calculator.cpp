@@ -19,10 +19,12 @@ Calculator::Calculator(QWidget *parent)
     layout->setMargin(0);
     mainmodule = new QWidget;
     defaultlayout = new QGridLayout;
+    displaylayout = new QGridLayout;
     advlayout = new QGridLayout;
     advmodule = new QWidget;
     taxlayout = new QGridLayout;
     taxmodule = new QWidget;
+    displaymodule = new QWidget;
     mainwindow = new QWidget;
     mainwindow->setLayout(layout);
     setCentralWidget(mainwindow);
@@ -44,7 +46,7 @@ Calculator::Calculator(QWidget *parent)
     connect(def, &QAction::triggered, this, &Calculator::switchToDef);
     connect(abt, &QAction::triggered, this, &Calculator::about);
     status_1 = new QLabel("Status_1", this);
-    status_1->setStyleSheet("margin-right: 2px; border-top: none; ");
+    status_1->setStyleSheet("margin-right: 2px; border-top: none; border: none;");
     status_1->hide();
     statusBar()->addPermanentWidget(status_1);
     statusBar()->setSizeGripEnabled(false);
@@ -58,9 +60,13 @@ Calculator::Calculator(QWidget *parent)
     display->setFont(font);
     display->setStyleSheet("QLabel { background-color: white; color: black; padding: 5px; border-radius: 0.25em; border: 1px solid lightgray; }");
 
-    setupButtons();
+    display_h = new QLabel("");
+    display_h->setAlignment(Qt::AlignRight);
+    display_h->setStyleSheet("QLabel { background-color: white; color: black; padding: 5px; border-radius: 0.25em; border: 1px solid lightgray; }");
+
+    setupUI();
 }
-void Calculator::setupButtons() {
+void Calculator::setupUI() {
     for (int i = 0; i < NumDigitButtons; ++i)
         digitButtons[i] = createButton(QString::number(i), SLOT(digitClicked()));
 
@@ -74,17 +80,17 @@ void Calculator::setupButtons() {
     Button *setMemoryButton = createButton(tr("MS"), SLOT(unaryOperatorClicked()));
     Button *addToMemoryButton = createButton(tr("M+"), SLOT(unaryOperatorClicked()));
     //DEFAULT
-    Button *divisionButton = createButton(tr("\303\267"), SLOT(operatorClicked()));
-    Button *timesButton = createButton(tr("\303\227"), SLOT(operatorClicked()));
+    Button *divisionButton = createButton(tr("÷"), SLOT(operatorClicked()));
+    Button *timesButton = createButton(tr("×"), SLOT(operatorClicked()));
     Button *minusButton = createButton(tr("-"), SLOT(operatorClicked()));
     Button *plusButton = createButton(tr("+"), SLOT(operatorClicked()));
     Button *squareRootButton = createButton(tr("√"), SLOT(unaryOperatorClicked()));
     Button *equalButton = createButton(tr("="), SLOT(equalClicked()));
     Button *pointButton = createButton(tr("."), SLOT(pointClicked()));
-    Button *changeSignButton = createButton(tr("\302\261"), SLOT(changeSignClicked()));
+    Button *changeSignButton = createButton(tr("±"), SLOT(changeSignClicked()));
     //ADVANCED
     Button *nthRootButton = createButton(tr("y√x"), SLOT(operatorClicked()));
-    Button *powerButton = createButton(tr("x^y"), SLOT(operatorClicked()));
+    Button *powerButton = createButton(tr("↑"), SLOT(operatorClicked()));
     Button *ModButton = createButton(tr("Mod"), SLOT(operatorClicked()));
     Button *reciprocalButton = createButton(tr("1/x"), SLOT(unaryOperatorClicked()));
     Button *factorialButton = createButton(tr("n!"), SLOT(unaryOperatorClicked()));
@@ -99,32 +105,36 @@ void Calculator::setupButtons() {
     Button *TAXshowButton = createButton(tr("TAX"), SLOT(unaryOperatorClicked()));
     //LAYOUT SETUP
     mainmodule->setLayout(defaultlayout);
-    layout->addWidget(mainmodule, 0, 0, 5, 5);
+    displaymodule->setLayout(displaylayout);
     advmodule->setLayout(advlayout);
     taxmodule->setLayout(taxlayout);
+    layout->addWidget(displaymodule, 0, 0, 1, 5);
+    layout->addWidget(mainmodule, 1, 0, 5, 5);
+    //DISPLAY
+    displaylayout->addWidget(display, 1, 0, 1, 5);
+    displaylayout->addWidget(display_h, 0, 0, 1, 5);
     //DEFAULT
-    defaultlayout->addWidget(display, 0, 0, 1, 5);
-    defaultlayout->addWidget(backspaceButton, 1, 0);
-    defaultlayout->addWidget(clearButton, 1, 1);
-    defaultlayout->addWidget(clearAllButton, 1, 2);
-    defaultlayout->addWidget(squareRootButton, 1, 3);
-    defaultlayout->addWidget(clearMemoryButton, 2, 0);
-    defaultlayout->addWidget(readMemoryButton, 3, 0);
-    defaultlayout->addWidget(setMemoryButton, 4, 0);
-    defaultlayout->addWidget(addToMemoryButton, 5, 0);
-    defaultlayout->addWidget(divisionButton, 4, 4);
-    defaultlayout->addWidget(timesButton, 3, 4);
-    defaultlayout->addWidget(minusButton, 1, 4);
-    defaultlayout->addWidget(plusButton, 2, 4);
-    defaultlayout->addWidget(digitButtons[0], 5, 1);
+    defaultlayout->addWidget(backspaceButton, 0, 0);
+    defaultlayout->addWidget(clearButton, 0, 1);
+    defaultlayout->addWidget(clearAllButton, 0, 2);
+    defaultlayout->addWidget(squareRootButton, 0, 3);
+    defaultlayout->addWidget(clearMemoryButton, 1, 0);
+    defaultlayout->addWidget(readMemoryButton, 2, 0);
+    defaultlayout->addWidget(setMemoryButton, 3, 0);
+    defaultlayout->addWidget(addToMemoryButton, 4, 0);
+    defaultlayout->addWidget(divisionButton, 3, 4);
+    defaultlayout->addWidget(timesButton, 2, 4);
+    defaultlayout->addWidget(minusButton, 0, 4);
+    defaultlayout->addWidget(plusButton, 1, 4);
+    defaultlayout->addWidget(digitButtons[0], 4, 1);
     for (int i = 1; i < NumDigitButtons; ++i) {
-        int row = ((9 - i) / 3) + 2;
+        int row = ((9 - i) / 3) + 1;
         int column = ((i - 1) % 3) + 1;
         defaultlayout->addWidget(digitButtons[i], row, column);
     }
-    defaultlayout->addWidget(pointButton, 5, 2);
-    defaultlayout->addWidget(changeSignButton, 5, 3);
-    defaultlayout->addWidget(equalButton, 5, 4);
+    defaultlayout->addWidget(pointButton, 4, 2);
+    defaultlayout->addWidget(changeSignButton, 4, 3);
+    defaultlayout->addWidget(equalButton, 4, 4);
     //ADVANCED
     advlayout->addWidget(factorialButton, 0, 0);
     advlayout->addWidget(logButton, 0, 1);
@@ -192,7 +202,8 @@ void Calculator::unaryOperatorClicked()
     QString clickedOperator = clickedButton->text();
     double operand = display->text().toDouble();
     double result = 0.0;
-
+    bool statusbarlock = false;
+    bool historylock = false;
     if (clickedOperator == tr("√")) {
         if (operand < 0.0) {
             abort();
@@ -202,6 +213,8 @@ void Calculator::unaryOperatorClicked()
     }
     else if (clickedOperator == tr("ln")) {
         result = std::log(operand);
+        historylock = true;
+        display_h->setText(clickedOperator + "(" + QString::number(operand) + ") = " + QString::number(result));
     }
     else if (clickedOperator == tr("n!")) {
             if (operand < 0) {
@@ -216,6 +229,8 @@ void Calculator::unaryOperatorClicked()
                         result *= i;
                     }
             }
+            historylock = true;
+            display_h->setText(QString::number(operand) + "! = " + QString::number(result));
     }
     else if (clickedOperator == tr("1/x")) {
         if (operand == 0.0) {
@@ -223,56 +238,65 @@ void Calculator::unaryOperatorClicked()
             return;
         }
         result = 1.0 / operand;
+        historylock = true;
+        display_h->setText("1/" + QString::number(operand) + " = " + QString::number(result));
     }
 
     //TAXES
     else if (clickedOperator == tr("TAX")) {
         result = operand - (operand / (tax * 0.01 + 1));
+        historylock = true;
     }
     else if (clickedOperator == tr("TAX+")) {
         result = operand * (tax * 0.01 + 1);
+        historylock = true;
     }
     else if (clickedOperator == tr("TAX-")) {
         result = operand / (tax * 0.01 + 1);
+        historylock = true;
     }
     else if (clickedOperator == tr("SET")) {
         tax = operand;
         result = operand;
         statusBar()->showMessage("Tax rate set | Ready", 2000);
-        statusBarBusy = true;
+        statusbarlock = true;
         status_1->setText("Tax rate: " + QString::number(tax) + "%");
+        historylock = true;
     }
 
     //MEMORY
     else if (clickedOperator == tr("MC")) {
         result = operand;
         memory = 0;
-        statusBarBusy = true;
+        statusbarlock = true;
         statusBar()->showMessage("Memory cleared | Ready", 2000);
+        historylock = true;
     }
     else if (clickedOperator == tr("MR")) {
         result = memory;
-        statusBarBusy = true;
+        statusbarlock = true;
         statusBar()->showMessage("Memory recalled | Ready", 2000);
+        historylock = true;
     }
     else if (clickedOperator == tr("MS")) {
         memory = operand;
         result = operand;
-        statusBarBusy = true;
+        statusbarlock = true;
         statusBar()->showMessage("Memory set | Ready", 2000);
+        historylock = true;
     }
     else if (clickedOperator == tr("M+")) {
         memory += operand;
         result = operand;
-        statusBarBusy = true;
+        statusbarlock = true;
         statusBar()->showMessage("Memory updated | Ready", 2000);
+        historylock = true;
     }
-
     updateText(QString::number(result));
-    if (statusBarBusy) {
-        statusBarBusy = false;
+    if (!historylock) {
+    display_h->setText(clickedOperator + QString::number(operand) + " = " + QString::number(result));
     }
-    else {
+    if (!statusbarlock) {
         statusBar()->showMessage("Ready", 2000);
     }
     waitingForOperand = true;
@@ -323,32 +347,38 @@ void Calculator::operatorClicked()
       return;
     QString clickedOperator = clickedButton->text();
     double operand = display->text().toDouble();
-
+    double displaybuffer = resultSoFar;
+    bool historylock = false;
     if (!pendingOperator.isEmpty()) {
         if (!calculate(operand, pendingOperator)) {
             abort();
             return;
         }
+        display_h->setText(QString::number(displaybuffer) + " " + pendingOperator + " " + QString::number(operand) + " = " + QString::number(resultSoFar));
+        historylock = true;
         updateText(QString::number(resultSoFar));
     } else {
         resultSoFar = operand;
     }
-
     pendingOperator = clickedOperator;
+    if (!historylock) {
+        display_h->setText(QString::number(operand) + " " + pendingOperator);
+    }
     waitingForOperand = true;
 }
 
 void Calculator::equalClicked()
 {
     double operand = display->text().toDouble();
-
+    double displaybuffer = resultSoFar;
     if (!pendingOperator.isEmpty()) {
         if (!calculate(operand, pendingOperator)) {
             abort();
             return;
         }
+        display_h->setText(QString::number(displaybuffer) + " " + pendingOperator + " " + QString::number(operand) + " = " + QString::number(resultSoFar));
+        statusBar()->showMessage("Ready", 2000);
         operand = resultSoFar;
-        //resultSoFar = 0.0;
         pendingOperator.clear();
     }
     else {
@@ -356,7 +386,6 @@ void Calculator::equalClicked()
     }
 
     updateText(QString::number(resultSoFar));
-    statusBar()->showMessage("Ready", 2000);
     resultSoFar = 0.0;
     waitingForOperand = true;
 }
@@ -406,6 +435,7 @@ void Calculator::clearAll()
 {
     resultSoFar = 0.0;
     pendingOperator.clear();
+    display_h->clear();
     updateText("0");
     statusBar()->showMessage("Ready", 2000);
     waitingForOperand = true;
@@ -433,15 +463,15 @@ bool Calculator::calculate(double rightOperand, const QString &pendingOperator)
     else if (pendingOperator == tr("-")) {
         resultSoFar -= rightOperand;
     }
-    else if (pendingOperator == tr("\303\227")) {
+    else if (pendingOperator == tr("×")) {
         resultSoFar *= rightOperand;
     }
-    else if (pendingOperator == tr("\303\267")) {
+    else if (pendingOperator == tr("÷")) {
         if (rightOperand == 0.0)
             return false;
         resultSoFar /= rightOperand;
     }
-    else if (pendingOperator == tr("x^y")) {
+    else if (pendingOperator == tr("↑")) {
         if (rightOperand == 0.0)
             resultSoFar = 1;
         else {
@@ -455,9 +485,9 @@ bool Calculator::calculate(double rightOperand, const QString &pendingOperator)
         resultSoFar = pow(resultSoFar,1/rightOperand);
     }
     return true;
-    }
+}
 void Calculator::about()
 {
    QMessageBox::about(this, tr("About PiCalcQT"),
-            tr("<b>PiCalcQT</b> is a simple calculator for Raspberry PI written in C++ and QT.<br>Build DEV01040221.<br>© 2021 Alexander Mazhirin"));
+            tr("<b>PiCalcQT</b> is a simple calculator for Raspberry PI written in C++ and QT.<br>Build DEV01050221 - ALPHA2.<br>© 2021 Alexander Mazhirin"));
 }

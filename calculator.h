@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QApplication>
-
+#include <QToolButton>
 QT_BEGIN_NAMESPACE
 class QLabel;
 QT_END_NAMESPACE
@@ -34,13 +34,14 @@ private:
     QWidget *mainWidget;
     QWidget *fileMenu;
     QWidget *layoutMenu;
+    QWidget *displaymodule;
     QWidget *mainmodule;
     QWidget *advmodule;
     QWidget *taxmodule;
     QWidget *mainwindow;
     QString currentLayout = "default";
     Button *createButton(const QString &text, const char *member);
-    void setupButtons();
+    void setupUI();
     void abort();
     void updateText(const QString &text);
     void switchToTax();
@@ -48,10 +49,7 @@ private:
     void switchToDef();
     void about();
     bool calculate(double rightOperand, const QString &pendingOperator);
-    bool statusBarBusy = false;
     double memory;
-    //double sumSoFar;
-    //double factorSoFar;
     double resultSoFar;
     float tax = 20;
     QString pendingAdditiveOperator;
@@ -59,12 +57,14 @@ private:
     QString measureUnit = "RAD";
     bool waitingForOperand;
     QLabel *display;
+    QLabel *display_h;
     QLabel *status_1;
     QLabel *status_2;
     QStatusBar *bar = nullptr;
     enum { NumDigitButtons = 10 };
     Button *digitButtons[NumDigitButtons];
     QGridLayout *layout;
+    QGridLayout *displaylayout;
     QGridLayout *defaultlayout;
     QGridLayout *advlayout;
     QGridLayout *taxlayout;
