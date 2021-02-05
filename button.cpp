@@ -1,12 +1,9 @@
 #include "button.h"
-
-Button::Button(const QString &text, QWidget *parent)
-    : QToolButton(parent)
+Button::Button(const QString &label, QWidget *parent) : QToolButton(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    setText(text);
+    setText(label);
 }
-
 QSize Button::sizeHint() const
 {
     QSize size = QToolButton::sizeHint();

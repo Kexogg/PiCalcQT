@@ -20,54 +20,58 @@ public:
 
 private slots:
     void digitClicked();
+    void operatorClicked();
     void unaryOperatorClicked();
     void trigonometryOperatorClicked();
-    void operatorClicked();
-    void equalClicked();
+    void equalsClicked();
     void pointClicked();
     void changeSign();
     void backspace();
     void clear();
     void clearAll();
-    void trigonomerySwitch();
+
 private:
-    QWidget *mainWidget;
-    QWidget *fileMenu;
-    QWidget *layoutMenu;
-    QWidget *displaymodule;
-    QWidget *mainmodule;
-    QWidget *advmodule;
-    QWidget *taxmodule;
-    QWidget *mainwindow;
+    //UI
     Button *addButton(const QString &text, const char *member);
-    void setupUI();
-    void abort();
-    void updateText(const QString &text);
-    void switchToTax();
-    void switchToAdv();
-    void switchToDef();
-    void about();
-    bool calculate(double rightOperand, const QString &pendingOperator);
-    bool noOperand;
-    long double memory;
-    long double result;
-    float tax = 20;
-    QString pendingAdditiveOperator;
-    QString pendingOperator;
-    QString measureUnit = "RAD";
-    QLabel *display;
-    QLabel *display_h;
-    QLabel *status_1;
-    QAction *tri;
-    QStatusBar *bar = nullptr;
-    enum { NumDigitButtons = 10 };
-    Button *digitButtons[NumDigitButtons];
+    enum
+    {
+        Numpad = 10
+    };
+    Button *digitButtons[Numpad];
     QGridLayout *windowlayout;
     QGridLayout *displaylayout;
     QGridLayout *mainlayout;
     QGridLayout *advlayout;
     QGridLayout *taxlayout;
+    QWidget *mainwindow;
+    QWidget *displaymodule;
+    QWidget *mainmodule;
+    QWidget *advmodule;
+    QWidget *taxmodule;
+    QWidget *fileMenu;
+    QWidget *layoutMenu;
+    QLabel *display;
+    QLabel *display_h;
+    QLabel *status;
+    QAction *tri;
+    QStatusBar *bar = nullptr;
+    QString queuedOperator;
+    QString measureUnit = "RAD";
+    //Functions
+    bool calculate(double operand, const QString &queuedOperator);
+    void updateText(const QString &text);
+    void setupUI();
+    void abort();
+    void trigonometrySwitch();
+    void switchToTax();
+    void switchToAdv();
+    void switchToDef();
+    void about();
+    //Variables
+    bool noOperand;
+    long double memory;
+    long double result;
+    float tax = 20; //VAT 20%
 };
-
 
 #endif
