@@ -9,16 +9,16 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    PiCalcQT.cpp \
     button.cpp \
-    main.cpp \
-    calculator.cpp
+    main.cpp
 
 HEADERS += \
-    button.h \
-    calculator.h
+    PiCalcQT.h \
+    button.h
 
 FORMS += \
-    calculator.ui
+    PiCalcQT.ui
 
 TRANSLATIONS += \
     CalculatorQT_en_US.ts

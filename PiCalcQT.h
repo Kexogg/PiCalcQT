@@ -1,5 +1,5 @@
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#ifndef PiCalcQT_H
+#define PiCalcQT_H
 #include <QStatusBar>
 #include <QMainWindow>
 #include <QWidget>
@@ -11,12 +11,12 @@ class QLabel;
 QT_END_NAMESPACE
 class Button;
 
-class Calculator : public QMainWindow
+class PiCalcQT : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    Calculator(QWidget *parent = nullptr);
+    PiCalcQT(QWidget *parent = nullptr);
 
 private slots:
     void digitClicked();
@@ -25,8 +25,8 @@ private slots:
     void operatorClicked();
     void equalClicked();
     void pointClicked();
-    void changeSignClicked();
-    void backspaceClicked();
+    void changeSign();
+    void backspace();
     void clear();
     void clearAll();
     void trigonomerySwitch();
@@ -39,8 +39,7 @@ private:
     QWidget *advmodule;
     QWidget *taxmodule;
     QWidget *mainwindow;
-    QString currentLayout = "default";
-    Button *createButton(const QString &text, const char *member);
+    Button *addButton(const QString &text, const char *member);
     void setupUI();
     void abort();
     void updateText(const QString &text);
@@ -49,23 +48,23 @@ private:
     void switchToDef();
     void about();
     bool calculate(double rightOperand, const QString &pendingOperator);
-    double memory;
-    double resultSoFar;
+    bool noOperand;
+    long double memory;
+    long double result;
     float tax = 20;
     QString pendingAdditiveOperator;
     QString pendingOperator;
     QString measureUnit = "RAD";
-    bool waitingForOperand;
     QLabel *display;
     QLabel *display_h;
     QLabel *status_1;
-    QLabel *status_2;
+    QAction *tri;
     QStatusBar *bar = nullptr;
     enum { NumDigitButtons = 10 };
     Button *digitButtons[NumDigitButtons];
-    QGridLayout *layout;
+    QGridLayout *windowlayout;
     QGridLayout *displaylayout;
-    QGridLayout *defaultlayout;
+    QGridLayout *mainlayout;
     QGridLayout *advlayout;
     QGridLayout *taxlayout;
 };
