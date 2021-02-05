@@ -15,8 +15,7 @@ HEADERS += \
 
 FORMS +=
 
-TRANSLATIONS += \
-    PiCalcQT_en_US.ts
+TRANSLATIONS +=
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

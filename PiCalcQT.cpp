@@ -62,11 +62,13 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     font.setPointSize(font.pointSize() + 8);
     display->setFont(font);
     display->setAlignment(Qt::AlignRight);
-    display->setStyleSheet("QLabel { background-color: white; color: black; padding: 5px; border-radius: 0.25em; border: 1px solid lightgray; }");
+    displaymodule->setStyleSheet(
+    ".QWidget {background-color: white; border-radius: 0.25em; border: 1px solid lightgray; margin: 5px 10px 0} "
+    "QLabel {color: black; padding: 0 5px 5px;}"
+    "QLabel#display_h {padding: 5px 5px; 0}");
     //HISTORY DISPLAY
     display_h = new QLabel("");
     display_h->setAlignment(Qt::AlignRight);
-    display_h->setStyleSheet("QLabel { background-color: white; color: black; padding: 5px; border-radius: 0.25em; border: 1px solid lightgray; }");
 
     setupUI();
 }
@@ -118,6 +120,7 @@ void PiCalcQT::setupUI()
     windowlayout->setContentsMargins(0, 0, 0, 0);
     //DISPLAY
     displaymodule->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    displaylayout->setSpacing(0);
     displaylayout->addWidget(display, 1, 0, 1, 5);
     displaylayout->addWidget(display_h, 0, 0, 1, 5);
     displaylayout->setContentsMargins(10, 10, 10, 0);
@@ -556,5 +559,5 @@ void PiCalcQT::abort()
 void PiCalcQT::about()
 {
     QMessageBox::about(this, tr("About PiCalcQT"),
-                       tr("<b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV02050221 - ALPHA3.<br>© 2021 Alexander Mazhirin"));
+                       tr("<b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV03050221 - ALPHA4.<br>© 2021 Alexander Mazhirin"));
 }
