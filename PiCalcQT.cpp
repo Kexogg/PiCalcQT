@@ -7,6 +7,8 @@
 #include <QtMath>
 #include <QMainWindow>
 #include <QtWidgets>
+#include <sstream>
+
 //TODO: Translate to Russian and historylock
 PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
 {
@@ -30,18 +32,26 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     fileMenu = menuBar()->addMenu(tr("File"));
     layoutMenu = menuBar()->addMenu(tr("Layout"));
     auto *quit = new QAction("&Quit", this);
+    auto *sellayout = new QActionGroup(this);
     auto *tax = new QAction("&Tax", this);
     auto *adv = new QAction("&Advanced", this);
     auto *def = new QAction("&Default", this);
     auto *abt = new QAction("&About", this);
     tri = new QAction("&Swicth to DEG", this);
+    quit->setToolTip("Quit this application");
+    tax->setToolTip("Switch to layout for calculating taxes");
+    adv->setToolTip("Switch to advanced layout");
+    def->setToolTip("Switch to default layout");
+    tax->setToolTip("About this application");
     fileMenu->addAction(quit);
     fileMenu->addAction(abt);
     fileMenu->addAction(tri);
     tri->setVisible(false);
-    layoutMenu->addAction(tax);
-    layoutMenu->addAction(adv);
-    layoutMenu->addAction(def);
+    sellayout->addAction(tax);
+    sellayout->addAction(adv);
+    sellayout->addAction(def);
+    def->setChecked(true);
+    layoutMenu->addActions(sellayout->actions());
     connect(quit, &QAction::triggered, qApp, QApplication::quit);
     connect(abt, &QAction::triggered, this, &PiCalcQT::about);
     connect(tax, &QAction::triggered, this, &PiCalcQT::switchToTax);
@@ -64,12 +74,11 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     display->setAlignment(Qt::AlignRight);
     displaymodule->setStyleSheet(
     ".QWidget {background-color: white; border-radius: 0.25em; border: 1px solid lightgray; margin: 5px 10px 0} "
-    "QLabel {color: black; padding: 0 5px 5px;}"
+    "QLabel {color: black; padding: 0 5px 5px;} "
     "QLabel#display_h {padding: 5px 5px; 0}");
     //HISTORY DISPLAY
     display_h = new QLabel("");
     display_h->setAlignment(Qt::AlignRight);
-
     setupUI();
 }
 void PiCalcQT::setupUI()
@@ -106,7 +115,7 @@ void PiCalcQT::setupUI()
     Button *cos = addButton(tr("cos"), SLOT(trigonometryOperatorClicked()));
     Button *tan = addButton(tr("tan"), SLOT(trigonometryOperatorClicked()));
     //TAXES
-    Button *TAXset = addButton(tr("SET"), SLOT(unaryOperatorClicked()));
+    Button *TAXset = addButton(tr("RATE"), SLOT(unaryOperatorClicked()));
     Button *TAXadd = addButton(tr("TAX+"), SLOT(unaryOperatorClicked()));
     Button *TAXremove = addButton(tr("TAX-"), SLOT(unaryOperatorClicked()));
     Button *TAXshow = addButton(tr("TAX"), SLOT(unaryOperatorClicked()));
@@ -173,6 +182,16 @@ Button *PiCalcQT::addButton(const QString &label, const char *member)
     connect(button, SIGNAL(clicked()), this, member);
     return button;
 }
+QString PiCalcQT::toQString(long double &number) {
+
+    return QString::number(number, 'g', displayLimit);
+}
+long double PiCalcQT::getDisplayData(QLabel &displayname) {
+    long double p1 = 0;
+    std::stringstream p2(displayname.text().toStdString());
+    p2>>p1;
+    return p1;
+}
 void PiCalcQT::updateText(const QString &text)
 {
     display->setText(tr(text.toUtf8().constData()));
@@ -218,14 +237,13 @@ void PiCalcQT::digitClicked()
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
     int digit = clickedButton->text().toInt();
-    if (display->text() == "0" && digit == 0)
-        return;
-
     if (noOperand)
     {
         display->clear();
         noOperand = false;
     }
+    if ((display->text() == "0" and digit == 0) or (display->text().length() == displayLimit))
+        return;
     updateText(display->text() + QString::number(digit));
 }
 void PiCalcQT::pointClicked()
@@ -254,8 +272,8 @@ void PiCalcQT::unaryOperatorClicked()
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
     QString clickedOperator = clickedButton->text();
-    double operand = display->text().toDouble();
-    double result = 0;
+    long double operand = getDisplayData(*display);
+    long double result = 0;
     bool statusbarlock = false;
     bool historylock = false;
     if (clickedOperator == tr("√"))
@@ -271,7 +289,7 @@ void PiCalcQT::unaryOperatorClicked()
     {
         result = std::log(operand);
         historylock = true;
-        display_h->setText(clickedOperator + "(" + QString::number(operand, 'g', 10) + ") = " + QString::number(result, 'g', 10));
+        display_h->setText(clickedOperator + "(" + toQString(operand) + ") = " + toQString(result));
     }
     else if (clickedOperator == tr("n!"))
     {
@@ -289,11 +307,14 @@ void PiCalcQT::unaryOperatorClicked()
             result = 1;
             for (int i = 1; i <= operand; ++i)
             {
+                if (result == INFINITY)
+                        break;
                 result *= i;
+
             }
         }
         historylock = true;
-        display_h->setText(QString::number(operand, 'g', 10) + "! = " + QString::number(result, 'g', 10));
+        display_h->setText(toQString(operand) + "! = " + toQString(result));
     }
     else if (clickedOperator == tr("1/x"))
     {
@@ -304,7 +325,7 @@ void PiCalcQT::unaryOperatorClicked()
         }
         result = 1.0 / operand;
         historylock = true;
-        display_h->setText("1/" + QString::number(operand, 'g', 10) + " = " + QString::number(result, 'g', 10));
+        display_h->setText("1/" + toQString(operand) + " = " + toQString(result));
     }
     else if (clickedOperator == tr("e"))
     {
@@ -314,20 +335,20 @@ void PiCalcQT::unaryOperatorClicked()
     //TAXES
     else if (clickedOperator == tr("TAX"))
     {
-        result = operand - (operand / (tax * 01 + 1));
+        result = operand - (operand / (tax * 0.01 + 1));
         historylock = true;
     }
     else if (clickedOperator == tr("TAX+"))
     {
-        result = operand * (tax * 01 + 1);
+        result = operand * (tax * 0.01 + 1);
         historylock = true;
     }
     else if (clickedOperator == tr("TAX-"))
     {
-        result = operand / (tax * 01 + 1);
+        result = operand / (tax * 0.01 + 1);
         historylock = true;
     }
-    else if (clickedOperator == tr("SET"))
+    else if (clickedOperator == tr("RATE"))
     {
         tax = operand;
         result = operand;
@@ -369,10 +390,10 @@ void PiCalcQT::unaryOperatorClicked()
         statusBar()->showMessage("Memory updated | Ready", 2000);
         historylock = true;
     }
-    updateText(QString::number(result, 'g', 10));
+    updateText(toQString(result));
     if (!historylock)
     {
-        display_h->setText(clickedOperator + QString::number(operand, 'g', 10) + " = " + QString::number(result, 'g', 10));
+        display_h->setText(clickedOperator + toQString(operand) + " = " + toQString(result));
     }
     if (!statusbarlock)
     {
@@ -386,7 +407,7 @@ void PiCalcQT::operatorClicked()
     if (!clickedButton)
         return;
     QString clickedOperator = clickedButton->text();
-    long double operand = display->text().toDouble();
+    long double operand = getDisplayData(*display);
     long double displaybuffer = result;
     bool historylock = false;
     if (!queuedOperator.isEmpty())
@@ -396,9 +417,9 @@ void PiCalcQT::operatorClicked()
             abort();
             return;
         }
-        display_h->setText(QString::number(displaybuffer, 'g', 10) + " " + queuedOperator + " " + QString::number(operand, 'g', 10) + " = " + QString::number(result, 'g', 10));
+        display_h->setText(toQString(displaybuffer) + " " + queuedOperator + " " + toQString(operand) + " = " + toQString(result));
         historylock = true;
-        updateText(QString::number(result, 'g', 10));
+        updateText(toQString(result));
     }
     else
     {
@@ -407,7 +428,7 @@ void PiCalcQT::operatorClicked()
     queuedOperator = clickedOperator;
     if (!historylock)
     {
-        display_h->setText(QString::number(operand, 'g', 10) + " " + queuedOperator);
+        display_h->setText(toQString(operand) + " " + queuedOperator);
     }
     noOperand = true;
 }
@@ -430,7 +451,7 @@ void PiCalcQT::trigonometryOperatorClicked()
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
     QString clickedOperator = clickedButton->text();
-    long double operand = display->text().toDouble();
+    long double operand = getDisplayData(*display);
     long double result = 0;
     if (measureUnit == "DEG")
     {
@@ -453,14 +474,14 @@ void PiCalcQT::trigonometryOperatorClicked()
         }
         result = std::tan(operand);
     }
-    display_h->setText(clickedOperator + "(" + QString::number(operand, 'g', 10) + ") = " + QString::number(result, 'g', 10));
-    updateText(QString::number(result, 'g', 10));
+    display_h->setText(clickedOperator + "(" + toQString(operand) + ") = " + toQString(result));
+    updateText(toQString(result));
     noOperand = true;
 }
 void PiCalcQT::equalsClicked()
 {
-    double operand = display->text().toDouble();
-    double displaybuffer = result;
+    long double operand = getDisplayData(*display);
+    long double displaybuffer = result;
     if (!queuedOperator.isEmpty())
     {
         if (!calculate(operand, queuedOperator))
@@ -468,7 +489,7 @@ void PiCalcQT::equalsClicked()
             abort();
             return;
         }
-        display_h->setText(QString::number(displaybuffer, 'g', 10) + " " + queuedOperator + " " + QString::number(operand, 'g', 10) + " = " + QString::number(result, 'g', 10));
+        display_h->setText(toQString(displaybuffer) + " " + queuedOperator + " " + toQString(operand) + " = " + toQString(result));
         statusBar()->showMessage("Ready", 2000);
         operand = result;
         queuedOperator.clear();
@@ -478,7 +499,7 @@ void PiCalcQT::equalsClicked()
         result = operand;
     }
 
-    updateText(QString::number(result, 'g', 10));
+    updateText(toQString(result));
     result = 0;
     noOperand = true;
 }
@@ -512,7 +533,7 @@ void PiCalcQT::clearAll()
     noOperand = true;
     queuedOperator.clear();
 }
-bool PiCalcQT::calculate(double operand, const QString &queuedOperator)
+bool PiCalcQT::calculate(long double operand, const QString &queuedOperator)
 {
     if (queuedOperator == tr("+"))
     {

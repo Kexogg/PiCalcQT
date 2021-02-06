@@ -58,7 +58,9 @@ private:
     QString queuedOperator;
     QString measureUnit = "RAD";
     //Functions
-    bool calculate(double operand, const QString &queuedOperator);
+    QString toQString(long double &number);
+    long double getDisplayData(QLabel &displayname);
+    bool calculate(long double operand, const QString &queuedOperator);
     void updateText(const QString &text);
     void setupUI();
     void abort();
@@ -68,6 +70,7 @@ private:
     void switchToDef();
     void about();
     //Variables
+    int displayLimit = 15;
     bool noOperand;
     long double memory;
     long double result;
