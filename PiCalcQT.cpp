@@ -25,33 +25,33 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     mainmodule = new QWidget;
     advmodule = new QWidget;
     taxmodule = new QWidget;
-    windowlayout->setSpacing(0);
-    mainwindow->setLayout(windowlayout);
-    setCentralWidget(mainwindow);
     //TOP MENU SETUP
     fileMenu = menuBar()->addMenu(tr("File"));
     layoutMenu = menuBar()->addMenu(tr("Layout"));
+    auto *layoutList = new QActionGroup(this);
     auto *quit = new QAction("&Quit", this);
-    auto *sellayout = new QActionGroup(this);
     auto *tax = new QAction("&Tax", this);
     auto *adv = new QAction("&Advanced", this);
     auto *def = new QAction("&Default", this);
     auto *abt = new QAction("&About", this);
     tri = new QAction("&Swicth to DEG", this);
-    quit->setToolTip("Quit this application");
-    tax->setToolTip("Switch to layout for calculating taxes");
-    adv->setToolTip("Switch to advanced layout");
-    def->setToolTip("Switch to default layout");
-    tax->setToolTip("About this application");
+    quit->setStatusTip("Quit this application");
+    tax->setStatusTip("Switch to layout for calculating taxes");
+    adv->setStatusTip("Switch to advanced layout");
+    def->setStatusTip("Switch to default layout");
+    abt->setStatusTip("About this application");
     fileMenu->addAction(quit);
     fileMenu->addAction(abt);
     fileMenu->addAction(tri);
     tri->setVisible(false);
-    sellayout->addAction(tax);
-    sellayout->addAction(adv);
-    sellayout->addAction(def);
+    layoutList->addAction(tax);
+    tax->setCheckable(true);
+    layoutList->addAction(adv);
+    adv->setCheckable(true);
+    layoutList->addAction(def);
+    def->setCheckable(true);
     def->setChecked(true);
-    layoutMenu->addActions(sellayout->actions());
+    layoutMenu->addActions(layoutList->actions());
     connect(quit, &QAction::triggered, qApp, QApplication::quit);
     connect(abt, &QAction::triggered, this, &PiCalcQT::about);
     connect(tax, &QAction::triggered, this, &PiCalcQT::switchToTax);
@@ -120,6 +120,9 @@ void PiCalcQT::setupUI()
     Button *TAXremove = addButton(tr("TAX-"), SLOT(unaryOperatorClicked()));
     Button *TAXshow = addButton(tr("TAX"), SLOT(unaryOperatorClicked()));
     //LAYOUT SETUP
+    windowlayout->setSpacing(0);
+    mainwindow->setLayout(windowlayout);
+    setCentralWidget(mainwindow);
     mainmodule->setLayout(mainlayout);
     displaymodule->setLayout(displaylayout);
     advmodule->setLayout(advlayout);
@@ -194,7 +197,7 @@ long double PiCalcQT::getDisplayData(QLabel &displayname) {
 }
 void PiCalcQT::updateText(const QString &text)
 {
-    display->setText(tr(text.toUtf8().constData()));
+    display->setText(text.toUtf8().constData());
 }
 void PiCalcQT::switchToTax()
 {
@@ -580,5 +583,5 @@ void PiCalcQT::abort()
 void PiCalcQT::about()
 {
     QMessageBox::about(this, tr("About PiCalcQT"),
-                       tr("<b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV03050221 - ALPHA4.<br>© 2021 Alexander Mazhirin"));
+                       tr("<b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV01060221 - ALPHA4.<br>© 2021 Alexander Mazhirin"));
 }
