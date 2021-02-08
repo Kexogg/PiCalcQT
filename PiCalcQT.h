@@ -48,8 +48,8 @@ private:
     QWidget *mainmodule;
     QWidget *advmodule;
     QWidget *taxmodule;
-    QWidget *fileMenu;
-    QWidget *layoutMenu;
+    QMenu *fileMenu;
+    QMenu *layoutMenu;
     QLabel *display;
     QLabel *display_h;
     QLabel *status;
@@ -61,7 +61,7 @@ private:
     QString toQString(long double &number);
     long double getDisplayData(QLabel &displayname);
     bool calculate(long double operand, const QString &queuedOperator);
-    void updateText(const QString &text);
+    void updateDisplayData(const QString &text);
     void setupUI();
     void abort();
     void trigonometrySwitch();

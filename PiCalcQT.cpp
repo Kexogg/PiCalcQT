@@ -8,8 +8,8 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <sstream>
-
-//TODO: Translate to Russian and historylock
+#include <math.h>
+//TODO: Translate to Russian, implement global historylock
 PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
 {
     setWindowTitle(tr("PiCalcQT"));
@@ -28,36 +28,28 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     //TOP MENU SETUP
     fileMenu = menuBar()->addMenu(tr("File"));
     layoutMenu = menuBar()->addMenu(tr("Layout"));
-    auto *layoutList = new QActionGroup(this);
-    auto *quit = new QAction("&Quit", this);
-    auto *tax = new QAction("&Tax", this);
-    auto *adv = new QAction("&Advanced", this);
-    auto *def = new QAction("&Default", this);
-    auto *abt = new QAction("&About", this);
-    tri = new QAction("&Swicth to DEG", this);
-    quit->setStatusTip("Quit this application");
-    tax->setStatusTip("Switch to layout for calculating taxes");
-    adv->setStatusTip("Switch to advanced layout");
-    def->setStatusTip("Switch to default layout");
-    abt->setStatusTip("About this application");
-    fileMenu->addAction(quit);
-    fileMenu->addAction(abt);
-    fileMenu->addAction(tri);
+    QActionGroup *layoutList = new QActionGroup(this);
+    QAction *abt = fileMenu->addAction(tr("&About"), this, &PiCalcQT::about);
+    QAction *abtQT = fileMenu->addAction(tr("&About Qt"), qApp, &QApplication::aboutQt);
+    QAction *quit = fileMenu->addAction(tr("&Quit"), qApp, &QApplication::quit);
+    QAction *tax = layoutMenu->addAction(tr("&Taxes"), this, &PiCalcQT::switchToTax);
+    QAction *adv = layoutMenu->addAction(tr("&Advanced"), this, &PiCalcQT::switchToAdv);
+    QAction *def = layoutMenu->addAction(tr("&Default"), this, &PiCalcQT::switchToDef);
+    tri = fileMenu->addAction(tr("&Swicth to DEG"), this, &PiCalcQT::trigonometrySwitch);
     tri->setVisible(false);
     layoutList->addAction(tax);
-    tax->setCheckable(true);
     layoutList->addAction(adv);
-    adv->setCheckable(true);
     layoutList->addAction(def);
+    tax->setCheckable(true);
+    adv->setCheckable(true);
     def->setCheckable(true);
     def->setChecked(true);
-    layoutMenu->addActions(layoutList->actions());
-    connect(quit, &QAction::triggered, qApp, QApplication::quit);
-    connect(abt, &QAction::triggered, this, &PiCalcQT::about);
-    connect(tax, &QAction::triggered, this, &PiCalcQT::switchToTax);
-    connect(adv, &QAction::triggered, this, &PiCalcQT::switchToAdv);
-    connect(def, &QAction::triggered, this, &PiCalcQT::switchToDef);
-    connect(tri, &QAction::triggered, this, &PiCalcQT::trigonometrySwitch);
+    quit->setStatusTip("Quit this application");
+    tax->setStatusTip("Switch to taxes mode");
+    adv->setStatusTip("Switch to advanced mode");
+    def->setStatusTip("Switch to default mode");
+    abt->setStatusTip("About this application");
+    abtQT->setStatusTip("About QT");
     //STATUS BAR SETUP
     status = new QLabel("status", this);
     status->setStyleSheet("margin-right: 2px; border-top: none; border: none;");
@@ -66,7 +58,7 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     statusBar()->setSizeGripEnabled(false);
     statusBar()->setStyleSheet("background-color: white; color: black; border-top: 1px solid lightgray; ");
     statusBar()->showMessage("Ready", 2000);
-    //MAIN DISPLAY
+    //MAIN DISPLAY SETUP
     display = new QLabel("");
     QFont font = display->font();
     font.setPointSize(font.pointSize() + 8);
@@ -76,7 +68,7 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     ".QWidget {background-color: white; border-radius: 0.25em; border: 1px solid lightgray; margin: 5px 10px 0} "
     "QLabel {color: black; padding: 0 5px 5px;} "
     "QLabel#display_h {padding: 5px 5px; 0}");
-    //HISTORY DISPLAY
+    //HISTORY DISPLAY SETUP
     display_h = new QLabel("");
     display_h->setAlignment(Qt::AlignRight);
     setupUI();
@@ -87,38 +79,38 @@ void PiCalcQT::setupUI()
     for (int i = 0; i < Numpad; ++i)
         digitButtons[i] = addButton(QString::number(i), SLOT(digitClicked()));
     //MEMORY
-    Button *clearMemory = addButton(tr("MC"), SLOT(unaryOperatorClicked()));
-    Button *readMemory = addButton(tr("MR"), SLOT(unaryOperatorClicked()));
-    Button *setMemory = addButton(tr("MS"), SLOT(unaryOperatorClicked()));
-    Button *addToMemory = addButton(tr("M+"), SLOT(unaryOperatorClicked()));
+    Button *clearMemory = addButton("MC", SLOT(unaryOperatorClicked()));
+    Button *readMemory = addButton("MR", SLOT(unaryOperatorClicked()));
+    Button *setMemory = addButton("MS", SLOT(unaryOperatorClicked()));
+    Button *addToMemory = addButton("M+", SLOT(unaryOperatorClicked()));
     //DEFAULT
     Button *backspace = addButton(tr("←"), SLOT(backspace()));
-    Button *clear = addButton(tr("C"), SLOT(clear()));
-    Button *clearAll = addButton(tr("CL"), SLOT(clearAll()));
-    Button *divide = addButton(tr("÷"), SLOT(operatorClicked()));
-    Button *multiply = addButton(tr("×"), SLOT(operatorClicked()));
-    Button *minus = addButton(tr("-"), SLOT(operatorClicked()));
-    Button *plus = addButton(tr("+"), SLOT(operatorClicked()));
-    Button *squareRoot = addButton(tr("√"), SLOT(unaryOperatorClicked()));
+    Button *clear = addButton("C", SLOT(clear()));
+    Button *clearAll = addButton("CL", SLOT(clearAll()));
+    Button *divide = addButton("÷", SLOT(operatorClicked()));
+    Button *multiply = addButton("×", SLOT(operatorClicked()));
+    Button *minus = addButton("-", SLOT(operatorClicked()));
+    Button *plus = addButton("+", SLOT(operatorClicked()));
+    Button *squareRoot = addButton("√", SLOT(unaryOperatorClicked()));
     Button *equal = addButton(tr("="), SLOT(equalsClicked()));
     Button *point = addButton(tr("."), SLOT(pointClicked()));
     Button *changeSign = addButton(tr("±"), SLOT(changeSign()));
     //ADVANCED
-    Button *nthRoot = addButton(tr("y√x"), SLOT(operatorClicked()));
-    Button *power = addButton(tr("↑"), SLOT(operatorClicked()));
-    Button *mod = addButton(tr("Mod"), SLOT(operatorClicked()));
-    Button *multiplicativeinverse = addButton(tr("1/x"), SLOT(unaryOperatorClicked()));
-    Button *factorial = addButton(tr("n!"), SLOT(unaryOperatorClicked()));
-    Button *log = addButton(tr("ln"), SLOT(unaryOperatorClicked()));
-    Button *inserte = addButton(tr("e"), SLOT(unaryOperatorClicked()));
-    Button *sin = addButton(tr("sin"), SLOT(trigonometryOperatorClicked()));
-    Button *cos = addButton(tr("cos"), SLOT(trigonometryOperatorClicked()));
-    Button *tan = addButton(tr("tan"), SLOT(trigonometryOperatorClicked()));
+    Button *nthRoot = addButton("y√x", SLOT(operatorClicked()));
+    Button *power = addButton("↑", SLOT(operatorClicked()));
+    Button *mod = addButton("Mod", SLOT(operatorClicked()));
+    Button *multiplicativeinverse = addButton("1/x", SLOT(unaryOperatorClicked()));
+    Button *factorial = addButton("n!", SLOT(unaryOperatorClicked()));
+    Button *log = addButton("ln", SLOT(unaryOperatorClicked()));
+    Button *inserte = addButton("e", SLOT(unaryOperatorClicked()));
+    Button *sin = addButton("sin", SLOT(trigonometryOperatorClicked()));
+    Button *cos = addButton("cos", SLOT(trigonometryOperatorClicked()));
+    Button *tan = addButton("tan", SLOT(trigonometryOperatorClicked()));
     //TAXES
-    Button *TAXset = addButton(tr("RATE"), SLOT(unaryOperatorClicked()));
-    Button *TAXadd = addButton(tr("TAX+"), SLOT(unaryOperatorClicked()));
-    Button *TAXremove = addButton(tr("TAX-"), SLOT(unaryOperatorClicked()));
-    Button *TAXshow = addButton(tr("TAX"), SLOT(unaryOperatorClicked()));
+    Button *TAXset = addButton("RATE", SLOT(unaryOperatorClicked()));
+    Button *TAXadd = addButton("TAX+", SLOT(unaryOperatorClicked()));
+    Button *TAXremove = addButton("TAX-", SLOT(unaryOperatorClicked()));
+    Button *TAXshow = addButton("TAX", SLOT(unaryOperatorClicked()));
     //LAYOUT SETUP
     windowlayout->setSpacing(0);
     mainwindow->setLayout(windowlayout);
@@ -185,18 +177,27 @@ Button *PiCalcQT::addButton(const QString &label, const char *member)
     connect(button, SIGNAL(clicked()), this, member);
     return button;
 }
-QString PiCalcQT::toQString(long double &number) {
-
+QString PiCalcQT::toQString(long double &number)
+{
     return QString::number(number, 'g', displayLimit);
 }
-long double PiCalcQT::getDisplayData(QLabel &displayname) {
+long double PiCalcQT::getDisplayData(QLabel &displayname)
+{
     long double p1 = 0;
     std::stringstream p2(displayname.text().toStdString());
     p2>>p1;
     return p1;
 }
-void PiCalcQT::updateText(const QString &text)
+void PiCalcQT::updateDisplayData(const QString &text)
 {
+    if (text == "nan") {
+        display->setText(QString("Not a number").toUtf8().constData());
+        return;
+    }
+    else if (text == "inf") {
+        display->setText(QString("Infinity/Overflow").toUtf8().constData());
+        return;
+    }
     display->setText(text.toUtf8().constData());
 }
 void PiCalcQT::switchToTax()
@@ -247,14 +248,14 @@ void PiCalcQT::digitClicked()
     }
     if ((display->text() == "0" and digit == 0) or (display->text().length() == displayLimit))
         return;
-    updateText(display->text() + QString::number(digit));
+    updateDisplayData(display->text() + QString::number(digit));
 }
 void PiCalcQT::pointClicked()
 {
     if (noOperand)
-        updateText("0");
+        updateDisplayData("0");
     if (!display->text().contains('.'))
-        updateText(display->text() + tr("."));
+        updateDisplayData(display->text() + tr("."));
     noOperand = false;
 }
 void PiCalcQT::changeSign()
@@ -263,13 +264,13 @@ void PiCalcQT::changeSign()
     double value = text.toDouble();
     if (value > 0)
     {
-        text.prepend(tr("-"));
+        text.prepend("-");
     }
     else if (value < 0)
     {
         text.remove(0, 1);
     }
-    updateText(text);
+    updateDisplayData(text);
 }
 void PiCalcQT::unaryOperatorClicked()
 {
@@ -279,7 +280,7 @@ void PiCalcQT::unaryOperatorClicked()
     long double result = 0;
     bool statusbarlock = false;
     bool historylock = false;
-    if (clickedOperator == tr("√"))
+    if (clickedOperator == "√")
     {
         if (operand < 0)
         {
@@ -288,13 +289,13 @@ void PiCalcQT::unaryOperatorClicked()
         }
         result = std::sqrt(operand);
     }
-    else if (clickedOperator == tr("ln"))
+    else if (clickedOperator == "ln")
     {
         result = std::log(operand);
         historylock = true;
         display_h->setText(clickedOperator + "(" + toQString(operand) + ") = " + toQString(result));
     }
-    else if (clickedOperator == tr("n!"))
+    else if (clickedOperator == "n!")
     {
         if (operand < 0 or operand == INFINITY)
         {
@@ -310,7 +311,7 @@ void PiCalcQT::unaryOperatorClicked()
             result = 1;
             for (int i = 1; i <= operand; ++i)
             {
-                if (result == INFINITY)
+                if (result == INFINITY) //Break on overflow
                         break;
                 result *= i;
 
@@ -319,7 +320,7 @@ void PiCalcQT::unaryOperatorClicked()
         historylock = true;
         display_h->setText(toQString(operand) + "! = " + toQString(result));
     }
-    else if (clickedOperator == tr("1/x"))
+    else if (clickedOperator == "1/x")
     {
         if (operand == 0)
         {
@@ -330,28 +331,28 @@ void PiCalcQT::unaryOperatorClicked()
         historylock = true;
         display_h->setText("1/" + toQString(operand) + " = " + toQString(result));
     }
-    else if (clickedOperator == tr("e"))
+    else if (clickedOperator == "e")
     {
         result = M_E;
         historylock = true;
     }
     //TAXES
-    else if (clickedOperator == tr("TAX"))
+    else if (clickedOperator == "TAX")
     {
         result = operand - (operand / (tax * 0.01 + 1));
         historylock = true;
     }
-    else if (clickedOperator == tr("TAX+"))
+    else if (clickedOperator == "TAX+")
     {
         result = operand * (tax * 0.01 + 1);
         historylock = true;
     }
-    else if (clickedOperator == tr("TAX-"))
+    else if (clickedOperator == "TAX-")
     {
         result = operand / (tax * 0.01 + 1);
         historylock = true;
     }
-    else if (clickedOperator == tr("RATE"))
+    else if (clickedOperator == "RATE")
     {
         tax = operand;
         result = operand;
@@ -362,7 +363,7 @@ void PiCalcQT::unaryOperatorClicked()
     }
 
     //MEMORY
-    else if (clickedOperator == tr("MC"))
+    else if (clickedOperator == "MC")
     {
         result = operand;
         memory = 0;
@@ -370,14 +371,14 @@ void PiCalcQT::unaryOperatorClicked()
         statusBar()->showMessage("Memory cleared | Ready", 2000);
         historylock = true;
     }
-    else if (clickedOperator == tr("MR"))
+    else if (clickedOperator == "MR")
     {
         result = memory;
         statusbarlock = true;
         statusBar()->showMessage("Memory recalled | Ready", 2000);
         historylock = true;
     }
-    else if (clickedOperator == tr("MS"))
+    else if (clickedOperator == "MS")
     {
         memory = operand;
         result = operand;
@@ -385,7 +386,7 @@ void PiCalcQT::unaryOperatorClicked()
         statusBar()->showMessage("Memory set | Ready", 2000);
         historylock = true;
     }
-    else if (clickedOperator == tr("M+"))
+    else if (clickedOperator == "M+")
     {
         memory += operand;
         result = operand;
@@ -393,7 +394,7 @@ void PiCalcQT::unaryOperatorClicked()
         statusBar()->showMessage("Memory updated | Ready", 2000);
         historylock = true;
     }
-    updateText(toQString(result));
+    updateDisplayData(toQString(result));
     if (!historylock)
     {
         display_h->setText(clickedOperator + toQString(operand) + " = " + toQString(result));
@@ -422,7 +423,7 @@ void PiCalcQT::operatorClicked()
         }
         display_h->setText(toQString(displaybuffer) + " " + queuedOperator + " " + toQString(operand) + " = " + toQString(result));
         historylock = true;
-        updateText(toQString(result));
+        updateDisplayData(toQString(result));
     }
     else
     {
@@ -460,15 +461,15 @@ void PiCalcQT::trigonometryOperatorClicked()
     {
         operand = (operand * M_PI) / 180;
     }
-    if (clickedOperator == tr("sin"))
+    if (clickedOperator == "sin")
     {
         result = std::sin(operand);
     }
-    if (clickedOperator == tr("cos"))
+    if (clickedOperator == "cos")
     {
         result = std::cos(operand);
     }
-    if (clickedOperator == tr("tan"))
+    if (clickedOperator == "tan")
     {
         if (measureUnit == "DEG" and (operand * 180) / M_PI == 90)
         {
@@ -478,7 +479,7 @@ void PiCalcQT::trigonometryOperatorClicked()
         result = std::tan(operand);
     }
     display_h->setText(clickedOperator + "(" + toQString(operand) + ") = " + toQString(result));
-    updateText(toQString(result));
+    updateDisplayData(toQString(result));
     noOperand = true;
 }
 void PiCalcQT::equalsClicked()
@@ -502,7 +503,7 @@ void PiCalcQT::equalsClicked()
         result = operand;
     }
 
-    updateText(toQString(result));
+    updateDisplayData(toQString(result));
     result = 0;
     noOperand = true;
 }
@@ -517,13 +518,13 @@ void PiCalcQT::backspace()
         text = "0";
         noOperand = true;
     }
-    updateText(text);
+    updateDisplayData(text);
 }
 void PiCalcQT::clear()
 {
     if (noOperand)
         return;
-    updateText("0");
+    updateDisplayData("0");
     statusBar()->showMessage("Ready", 2000);
     noOperand = true;
 }
@@ -531,32 +532,32 @@ void PiCalcQT::clearAll()
 {
     result = 0;
     display_h->clear();
-    updateText("0");
+    updateDisplayData("0");
     statusBar()->showMessage("Ready", 2000);
     noOperand = true;
     queuedOperator.clear();
 }
 bool PiCalcQT::calculate(long double operand, const QString &queuedOperator)
 {
-    if (queuedOperator == tr("+"))
+    if (queuedOperator == "+")
     {
         result += operand;
     }
-    else if (queuedOperator == tr("×"))
+    else if (queuedOperator == "×")
     {
         result *= operand;
     }
-    else if (queuedOperator == tr("-"))
+    else if (queuedOperator == "-")
     {
         result -= operand;
     }
-    else if (queuedOperator == tr("÷"))
+    else if (queuedOperator == "÷")
     {
         if (operand == 0)
             return false;
         result /= operand;
     }
-    else if (queuedOperator == tr("↑"))
+    else if (queuedOperator == "↑")
     {
         if (operand == 0)
             result = 1;
@@ -565,11 +566,11 @@ bool PiCalcQT::calculate(long double operand, const QString &queuedOperator)
             result = std::pow(result, operand);
         }
     }
-    else if (queuedOperator == tr("Mod"))
+    else if (queuedOperator == "Mod")
     {
         result = fmod(result, operand);
     }
-    else if (queuedOperator == tr("y√x"))
+    else if (queuedOperator == "y√x")
     {
         result = pow(result, 1 / operand);
     }
@@ -578,10 +579,9 @@ bool PiCalcQT::calculate(long double operand, const QString &queuedOperator)
 void PiCalcQT::abort()
 {
     clearAll();
-    updateText("Error");
+    updateDisplayData("Error");
 }
 void PiCalcQT::about()
 {
-    QMessageBox::about(this, tr("About PiCalcQT"),
-                       tr("<b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV01060221 - ALPHA4.<br>© 2021 Alexander Mazhirin"));
+    QMessageBox::about(this, tr("About PiCalcQT"), tr("<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV01080221 - ALPHA5.<br>© 2021 Alexander Mazhirin</p>"));
 }
