@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <QApplication>
 #include <QToolButton>
+#include "exprtk.hpp"
 QT_BEGIN_NAMESPACE
 class QLabel;
 QT_END_NAMESPACE
@@ -22,7 +23,7 @@ private slots:
     void digitClicked();
     void operatorClicked();
     void unaryOperatorClicked();
-    void trigonometryOperatorClicked();
+    void bracketClicked();
     void equalsClicked();
     void pointClicked();
     void changeSign();
@@ -56,9 +57,11 @@ private:
     QAction *tri;
     QStatusBar *bar = nullptr;
     QString queuedOperator;
+    QString queuedUnaryOperator;
     QString measureUnit = "RAD";
     //Functions
     QString toQString(long double &number);
+    //std::string preParseExpression(std::string &text, const std::string& find, const std::string& replace);
     long double getDisplayData(QLabel &displayname);
     bool calculate(long double operand, const QString &queuedOperator);
     void updateDisplayData(const QString &text);
@@ -74,6 +77,7 @@ private:
     bool noOperand;
     long double memory;
     long double result;
+    bool resetFlag = false;
     float tax = 20; //VAT 20%
 };
 

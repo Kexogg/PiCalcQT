@@ -12,7 +12,8 @@ SOURCES += \
 
 HEADERS += \
     PiCalcQT.h \
-    button.h
+    button.h \
+    exprtk.hpp
 
 FORMS +=
 
