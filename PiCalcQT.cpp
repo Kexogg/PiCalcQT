@@ -96,7 +96,7 @@ void PiCalcQT::setupUI()
     Button *point = addButton(tr("."), SLOT(pointClicked()));
     Button *changeSign = addButton(tr("±"), SLOT(changeSign()));
     //ADVANCED
-    Button *nthRoot = addButton("|x|", SLOT(unaryOperatorClicked()));
+    Button *abs = addButton("|𝑥|", SLOT(unaryOperatorClicked()));
     Button *power = addButton("↑", SLOT(operatorClicked()));
     Button *mod = addButton("Mod", SLOT(operatorClicked()));
     Button *multiplicativeinverse = addButton("1/x", SLOT(unaryOperatorClicked()));
@@ -165,7 +165,7 @@ void PiCalcQT::setupUI()
     advlayout->addWidget(sin, 1, 1);
     advlayout->addWidget(cos, 1, 2);
     advlayout->addWidget(tan, 1, 3);
-    advlayout->addWidget(nthRoot, 1, 4);
+    advlayout->addWidget(abs, 1, 4);
     advlayout->addWidget(bracketL, 2, 0);
     advlayout->addWidget(bracketR, 2, 1);
     //TAXES
@@ -243,7 +243,7 @@ void PiCalcQT::switchToDef()
 }
 void PiCalcQT::about()
 {
-    QMessageBox::about(this, tr("About PiCalcQT"), tr("<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV01080221 - ALPHA5.<br>© 2021 Alexander Mazhirin</p>"));
+    QMessageBox::about(this, tr("About PiCalcQT"), tr("<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV01190821 - BETA1.<br>© 2021 Alexander Mazhirin</p>"));
 }
 void PiCalcQT::digitClicked()
 {
@@ -303,7 +303,6 @@ void PiCalcQT::clear()
 }
 void PiCalcQT::clearAll()
 {
-    //result = 0;
     display_h->clear();
     updateDisplayData("0");
     statusBar()->showMessage("Ready", 2000);
@@ -361,7 +360,7 @@ void PiCalcQT::unaryOperatorClicked()
         result = M_E;
         historylock = true;
     }
-    else if (queuedUnaryOperator == "|x|")
+    else if (queuedUnaryOperator == "|𝑥|")
         queuedUnaryOperator = "abs";
     //TAXES
     else if (queuedUnaryOperator == "TAX")
@@ -540,7 +539,6 @@ void PiCalcQT::equalsClicked()
     resetFlag = true;
     queuedOperator.clear();
 }
-
 void PiCalcQT::abort()
 {
     clearAll();
