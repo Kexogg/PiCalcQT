@@ -1,5 +1,8 @@
-name: qt-windows
+name: build-on-push-windows
 on:
+  push:
+    branches:
+      - "master"
   workflow_dispatch:
 jobs:
   build:
@@ -28,27 +31,19 @@ jobs:
           copy D:/a/PiCalcQT/Qt/5.15.2/mingw81_64/bin/libstdc++-6.dll
           copy D:/a/PiCalcQT/Qt/5.15.2/mingw81_64/bin/libgcc_s_seh-1.dll
           windeployqt PiCalcQT.exe
+          rm *.o
+          rm *.cpp
       - name: Achive release
         run: |
           cd build
           powershell "Compress-Archive release PiCalcQT.zip"
+          
+          
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          tag_name: v0.2
-          release_name: Beta 2
-          draft: false
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
           prerelease: true
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/PiCalcQT.zip
-          asset_name: PiCalcQT.zip
-          asset_content_type: application/zip
+          title: "Dev Build - ${{ github.event.head_commit.message}}"
+          files: build/PiCalcQT.zip
