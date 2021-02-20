@@ -13,9 +13,12 @@ jobs:
           version: '5.15.2'
           host: 'windows'
           target: 'desktop'
+          arch: 'win64_mingw81'
       - name: Configure project
         run: |
+          mkdir build
+          cd build
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          dir %Qt5_DIR%/lib/cmake
-          qmake
+          qmake ../PiCalcQT.pro
+          mingw32-make 
         shell: cmd
