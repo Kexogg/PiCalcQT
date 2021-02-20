@@ -1,8 +1,8 @@
 name: build-on-tag-windows
 on:
   push:
-    branches:
-      - "master"
+    tags:
+      - "v*"
   workflow_dispatch:
 jobs:
   build:
@@ -42,5 +42,4 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-          title: "${{ github.event.ref }}"
           files: build/PiCalcQT.zip
