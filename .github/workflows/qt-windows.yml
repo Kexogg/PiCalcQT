@@ -12,15 +12,21 @@ jobs:
           version: '5.15.2'
           host: 'windows'
           target: 'desktop'
+          arch: 'win64_mingw81'
       - name: Configure and build project
         run: |
           mkdir build
           cd build
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          nmake clean
-          qmake ../PiCalcQT.pro -config release
-          nmake 
+          qmake ../PiCalcQT.pro
+          mingw32-make 
         shell: cmd
+      - name: Use QT Windows deployment tool
+        run: |
+          windeployqt PiCalcQT.exe
+      - name: Achive release
+        run: |
+          tar.exe -x -f PiCalcQT.zip 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -38,6 +44,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/release/PiCalcQT.exe
+          asset_path: build/release/PiCalcQT.zip
           asset_name: PiCalcQT.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          asset_content_type: application/zip
