@@ -19,15 +19,15 @@ jobs:
           cd build
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           qmake ../PiCalcQT.pro
-          mingw32-make 
+          mingw32-make -static -static-libstdc++ -static-libgcc
         shell: cmd
-      - name: Use QT Windows deployment tool
+      - name: Add libs whth QT Windows deployment tool
         run: |
           windeployqt build/release/PiCalcQT.exe
       - name: Achive release
         run: |
-          cd build/release
-          powershell "Compress-Archive * PiCalcQT.zip"
+          cd build
+          powershell "Compress-Archive release PiCalcQT.zip"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
