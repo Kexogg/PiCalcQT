@@ -19,11 +19,15 @@ jobs:
           cd build
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           qmake ../PiCalcQT.pro
-          mingw32-make -static -static-libstdc++ -static-libgcc
+          mingw32-make
         shell: cmd
-      - name: Add libs whth QT Windows deployment tool
+      - name: Add missing DLLs
         run: |
-          windeployqt build/release/PiCalcQT.exe
+          cd build
+          windeployqt release\PiCalcQT.exe
+          copy "%Qt5_DIR%\Tools\mingw810_64\bin\libgcc_s_seh-1.dll" release
+          copy "%Qt5_DIR%\Tools\mingw810_64\bin\libstdc++-6.dll" release
+          copy "%Qt5_DIR%\Tools\mingw810_64\bin\libwinpthread-1.dll" release
       - name: Achive release
         run: |
           cd build
