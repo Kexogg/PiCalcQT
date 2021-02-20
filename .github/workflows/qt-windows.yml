@@ -23,7 +23,7 @@ jobs:
         shell: cmd
       - name: Use QT Windows deployment tool
         run: |
-          windeployqt PiCalcQT.exe
+          windeployqt build/PiCalcQT.exe
       - name: Achive release
         run: |
           tar.exe -x -f PiCalcQT.zip 
