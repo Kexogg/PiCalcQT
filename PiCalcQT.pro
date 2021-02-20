@@ -8,12 +8,13 @@ CONFIG += c++11 \
 SOURCES += \
     PiCalcQT.cpp \
     button.cpp \
-    main.cpp
+    main.cpp \
+    tinyexpr.c
 
 HEADERS += \
     PiCalcQT.h \
     button.h \
-    exprtk.hpp
+    tinyexpr.h
 
 FORMS +=
 

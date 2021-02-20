@@ -6,7 +6,6 @@
 #include <QVBoxLayout>
 #include <QApplication>
 #include <QToolButton>
-#include "exprtk.hpp"
 QT_BEGIN_NAMESPACE
 class QLabel;
 QT_END_NAMESPACE
@@ -61,9 +60,8 @@ private:
     QString measureUnit = "RAD";
     //Functions
     QString toQString(long double &number);
-    //std::string preParseExpression(std::string &text, const std::string& find, const std::string& replace);
     long double getDisplayData(QLabel &displayname);
-    bool calculate(long double operand, const QString &queuedOperator);
+    bool isBracketClosed();
     void updateDisplayData(const QString &text);
     void setupUI();
     void abort();
@@ -74,10 +72,9 @@ private:
     void about();
     //Variables
     int displayLimit = 15;
-    bool noOperand;
     long double memory;
-    long double result;
     bool resetFlag = false;
+    bool errorFlag = false;
     float tax = 20; //VAT 20%
 };
 

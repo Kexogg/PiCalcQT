@@ -1,6 +1,6 @@
 #include "PiCalcQT.h"
 #include "button.h"
-#include "exprtk.hpp"
+#include "tinyexpr.h"
 #include <QStatusBar>
 #include <QMenuBar>
 #include <QGridLayout>
@@ -59,7 +59,7 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     statusBar()->setStyleSheet("background-color: white; color: black; border-top: 1px solid lightgray;");
     statusBar()->showMessage("Ready", 2000);
     //MAIN DISPLAY SETUP
-    display = new QLabel("");
+    display = new QLabel("0");
     QFont font = display->font();
     font.setPointSize(font.pointSize() + 8);
     display->setFont(font);
@@ -101,11 +101,14 @@ void PiCalcQT::setupUI()
     Button *mod = addButton("Mod", SLOT(operatorClicked()));
     Button *multiplicativeinverse = addButton("1/x", SLOT(unaryOperatorClicked()));
     Button *factorial = addButton("n!", SLOT(unaryOperatorClicked()));
-    Button *log = addButton("log", SLOT(unaryOperatorClicked()));
+    Button *pi = addButton("π", SLOT(unaryOperatorClicked()));
     Button *inserte = addButton("e", SLOT(unaryOperatorClicked()));
     Button *sin = addButton("sin", SLOT(unaryOperatorClicked()));
     Button *cos = addButton("cos", SLOT(unaryOperatorClicked()));
     Button *tan = addButton("tan", SLOT(unaryOperatorClicked()));
+    Button *ln = addButton("ln", SLOT(unaryOperatorClicked()));
+    Button *log = addButton("log", SLOT(unaryOperatorClicked()));
+    Button *log10 = addButton("log10", SLOT(unaryOperatorClicked()));
     Button *bracketL = addButton("(", SLOT(bracketClicked()));
     Button *bracketR = addButton(")", SLOT(bracketClicked()));
     //TAXES
@@ -157,17 +160,20 @@ void PiCalcQT::setupUI()
     //ADVANCED
     advlayout->setContentsMargins(10, 6, 10, 10);
     advlayout->addWidget(factorial, 0, 0);
-    advlayout->addWidget(log, 0, 1);
+    advlayout->addWidget(pi, 0, 1);
     advlayout->addWidget(power, 0, 2);
     advlayout->addWidget(multiplicativeinverse, 0, 3);
     advlayout->addWidget(mod, 0, 4);
     advlayout->addWidget(inserte, 1, 0);
-    advlayout->addWidget(sin, 1, 1);
-    advlayout->addWidget(cos, 1, 2);
-    advlayout->addWidget(tan, 1, 3);
-    advlayout->addWidget(abs, 1, 4);
+    advlayout->addWidget(abs, 1, 1);
+    advlayout->addWidget(sin, 1, 2);
+    advlayout->addWidget(cos, 1, 3);
+    advlayout->addWidget(tan, 1, 4);
     advlayout->addWidget(bracketL, 2, 0);
     advlayout->addWidget(bracketR, 2, 1);
+    advlayout->addWidget(ln, 2, 2);
+    advlayout->addWidget(log, 2, 3);
+    advlayout->addWidget(log10, 2, 4);
     //TAXES
     taxlayout->setContentsMargins(10, 6, 10, 10);
     taxlayout->addWidget(TAXset, 0, 0);
@@ -196,13 +202,22 @@ void PiCalcQT::updateDisplayData(const QString &text)
 {
     if (text == "nan") {
         display->setText(QString("Error").toUtf8().constData());
+        errorFlag = true;
         return;
     }
     else if (text == "inf") {
         display->setText(QString("Infinity/Overflow").toUtf8().constData());
+        errorFlag = true;
         return;
     }
     display->setText(text.toUtf8().constData());
+}
+bool PiCalcQT::isBracketClosed() {
+    if (!display_h->text().isEmpty()) {
+        if (display_h->text().back() == ")")
+            return true;
+    }
+    return false;
 }
 void PiCalcQT::switchToTax()
 {
@@ -243,7 +258,7 @@ void PiCalcQT::switchToDef()
 }
 void PiCalcQT::about()
 {
-    QMessageBox::about(this, tr("About PiCalcQT"), tr("<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build DEV01190821 - BETA1.<br>© 2021 Alexander Mazhirin</p>"));
+    QMessageBox::about(this, "About PiCalcQT", "<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT.<br>Build " + QStringLiteral(__DATE__) + " " + QStringLiteral(__TIME__) + " - BETA 2.<br>© 2021 Alexander Mazhirin</p>");
 }
 void PiCalcQT::digitClicked()
 {
@@ -256,7 +271,11 @@ void PiCalcQT::digitClicked()
         display->clear();
         queuedOperator.clear();
     }
-    if ((display->text() == "0" and digit == 0) or (display->text().length() == displayLimit))
+    if (display->text() == "0" and digit == 0)
+    {
+        return;
+    }
+    else if (display->text().length() == displayLimit)
         return;
     else if (display->text() == "0")
         updateDisplayData(QString::number(digit));
@@ -266,15 +285,16 @@ void PiCalcQT::digitClicked()
 }
 void PiCalcQT::pointClicked()
 {
-    if (noOperand)
-        updateDisplayData("0");
+    if (resetFlag) {
+        clearAll();
+        updateDisplayData("0.");
+    }
     if (!display->text().contains('.'))
-        updateDisplayData(display->text() + tr("."));
-    noOperand = false;
+        updateDisplayData(display->text() + ".");
 }
 void PiCalcQT::changeSign()
 {
-    if (!resetFlag)
+    if (!resetFlag and display->text() != "0")
     {
         long double value = getDisplayData(*display)/-1;
         updateDisplayData(toQString(value));
@@ -282,24 +302,20 @@ void PiCalcQT::changeSign()
 }
 void PiCalcQT::backspace()
 {
-    if (noOperand)
+    if (resetFlag)
         return;
     QString text = display->text();
     text.chop(1);
     if (text.isEmpty())
-    {
         text = "0";
-        noOperand = true;
-    }
     updateDisplayData(text);
 }
 void PiCalcQT::clear()
 {
-    if (noOperand)
+    if (resetFlag)
         return;
     updateDisplayData("0");
     statusBar()->showMessage("Ready", 2000);
-    noOperand = true;
 }
 void PiCalcQT::clearAll()
 {
@@ -307,63 +323,25 @@ void PiCalcQT::clearAll()
     updateDisplayData("0");
     statusBar()->showMessage("Ready", 2000);
     resetFlag = false;
-    noOperand = true;
+    errorFlag = false;
     queuedOperator.clear();
+    queuedUnaryOperator.clear();
 }
 void PiCalcQT::unaryOperatorClicked()
 {
+    if (errorFlag)
+        clearAll();
+
     Button *clickedButton = qobject_cast<Button *>(sender());
     queuedUnaryOperator = clickedButton->text();
     long double operand = getDisplayData(*display);
     long double result = 0;
     bool statusbarlock = false;
     bool historylock = false;
-    if (resetFlag)
-    {
-        resetFlag = false;
-        display_h->setText(display->text());
-        display->clear();
-    }
-    if (queuedUnaryOperator == "n!")
-    {
-        if (operand < 0 or operand == INFINITY)
-        {
-            abort();
-            return;
-        }
-        else if (operand == 0)
-            result = 1;
-        else
-        {
-            result = 1;
-            for (int i = 1; i <= operand; ++i)
-            {
-                if (result == INFINITY) //Break on overflow
-                        break;
-                result *= i;
-            }
-        }
-        historylock = true;
-    }
-    else if (queuedUnaryOperator == "1/x")
-    {
-        if (operand == 0)
-        {
-            abort();
-            return;
-        }
-        result = 1 / operand;
-        historylock = true;
-    }
-    else if (queuedUnaryOperator == "e")
-    {
-        result = M_E;
-        historylock = true;
-    }
-    else if (queuedUnaryOperator == "|𝑥|")
-        queuedUnaryOperator = "abs";
+    bool bracketlock = false;
+
     //TAXES
-    else if (queuedUnaryOperator == "TAX")
+    if (queuedUnaryOperator == "TAX")
     {
         result = operand - (operand / (tax * 0.01 + 1));
         historylock = true;
@@ -387,6 +365,31 @@ void PiCalcQT::unaryOperatorClicked()
         status->setText("Tax rate: " + QString::number(tax) + "%");
         historylock = true;
     }
+    if (resetFlag)
+    {
+        resetFlag = false;
+        display_h->setText(display->text());
+        display->clear();
+    }
+    //ADVANCED
+    if (queuedUnaryOperator == "n!")
+    {
+        queuedUnaryOperator = "!";
+    }
+    else if (queuedUnaryOperator == "1/x")
+    {
+        if (operand == 0)
+        {
+            abort();
+            return;
+        }
+        result = 1 / operand;
+        historylock = true;
+    }
+    else if (queuedUnaryOperator == "e" or queuedUnaryOperator == "π")
+        bracketlock = true;
+    else if (queuedUnaryOperator == "|𝑥|")
+        queuedUnaryOperator = "abs";
     //MEMORY
     else if (queuedUnaryOperator == "MC")
     {
@@ -419,14 +422,16 @@ void PiCalcQT::unaryOperatorClicked()
         statusBar()->showMessage("Memory updated | Ready", 2000);
         historylock = true;
     }
-    if (measureUnit == "DEG" and queuedUnaryOperator == ("sin" or "cos" or "tan"))
+    else if (queuedUnaryOperator == "sin" or queuedUnaryOperator == "cos" or queuedUnaryOperator == "tan")
     {
-        display_h->setText(display_h->text() + queuedUnaryOperator + "(deg2rad(");
-        historylock = true;
-    }
-    else if (measureUnit == "RAD" and queuedUnaryOperator == ("sin" or "cos" or "tan"))
-    {
-        display_h->setText(display_h->text() + queuedUnaryOperator + "(");
+        if (measureUnit == "DEG")
+            queuedUnaryOperator = queuedUnaryOperator + "(deg2rad(";
+        else
+            queuedUnaryOperator = queuedUnaryOperator + "(";
+        if (isBracketClosed()) {
+            queuedUnaryOperator = "×" + queuedUnaryOperator;
+        }
+        display_h->setText(display_h->text() + queuedUnaryOperator);
         historylock = true;
     }
     if (historylock)
@@ -436,31 +441,60 @@ void PiCalcQT::unaryOperatorClicked()
     }
     else
     {
-        if (display_h->text().isEmpty())
-            display_h->setText(queuedUnaryOperator + "(");
-        else if (!queuedOperator.isEmpty())
-            display_h->setText(display_h->text() + queuedUnaryOperator + "(");
+        if (!bracketlock)
+            queuedUnaryOperator = queuedUnaryOperator + "(";
+        if (!queuedOperator.isEmpty() or (display_h->text().isEmpty() and getDisplayData(*display) == 0))
+            display_h->setText(display_h->text() + queuedUnaryOperator);
         else
-            display_h->setText(display_h->text() + display->text() + queuedUnaryOperator + "(");
+            display_h->setText(display_h->text() + display->text() + "×" + queuedUnaryOperator);
         display->clear();
     }
     if (!statusbarlock)
         statusBar()->showMessage("Ready", 2000);
 }
-void PiCalcQT::bracketClicked() {
+void PiCalcQT::bracketClicked()
+{ //FIXME: else if hell
+    if (errorFlag)
+        clearAll();
     Button *clickedButton = qobject_cast<Button *>(sender());
-    if (display_h->text() == "" and display->text() == "0")
-        display_h->setText(clickedButton->text());
-    else if (display_h->text() == "")
-        display_h->setText(display_h->text() + display->text() + clickedButton->text());
-    else
-        display_h->setText(display_h->text() + display->text() + clickedButton->text());
-    display->setText("");
+    if (clickedButton->text() == "(")
+    {
+        if (display_h->text().isEmpty() and getDisplayData(*display) == 0)
+            display_h->setText(clickedButton->text());
+        else if (!display_h->text().isEmpty()) //We can't use back() with empty string
+        {
+            if ((display_h->text().back() == "(" or !queuedOperator.isEmpty()) and getDisplayData(*display) == 0)
+                display_h->setText(display_h->text() + clickedButton->text());
+            else if (display_h->text().back() == ")")
+            {
+                if (getDisplayData(*display) == 0)
+                    display_h->setText(display_h->text() + "×" + clickedButton->text());
+                else
+                    display_h->setText(display_h->text() + "×" + display->text() + "×" + clickedButton->text());
+            }
+        }
+        else if (getDisplayData(*display) != 0 and queuedOperator.isEmpty())
+            display_h->setText(display_h->text() + display->text() + "×" + clickedButton->text());
+        else if (queuedOperator.isEmpty())
+            display_h->setText(display_h->text() + "×" + clickedButton->text());
+    }
+    else if (clickedButton->text() == ")" and !display_h->text().isEmpty())
+    {
+        std::string expression_str = display_h->text().toStdString(); //If we use std::count with display_h->text().toStdString() program will crash
+            if (std::count(expression_str.begin(), expression_str.end(), '(') > std::count(expression_str.begin(), expression_str.end(), ')'))
+            {
+                if (getDisplayData(*display) != 0 or display_h->text().back() == "(")
+                    display_h->setText(display_h->text() + display->text() + clickedButton->text());
+                else
+                    display_h->setText(display_h->text() + clickedButton->text());
+            }
+    }
+    display->setText("0");
 }
 void PiCalcQT::operatorClicked()
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
-    if (!clickedButton)
+    if (!clickedButton or errorFlag)
         return;
     if (resetFlag)
     {
@@ -473,11 +507,15 @@ void PiCalcQT::operatorClicked()
         queuedOperator = clickedButton->text();
         QString text = display_h->text();
         text.chop(queuedOperator.length());
-        display_h->setText(text + clickedButton->text());
+        display_h->setText(text + queuedOperator);
     }
     else if (queuedUnaryOperator.isEmpty() or queuedOperator.isEmpty())
     {
-       display_h->setText(display_h->text() + display->text() + clickedButton->text());
+       queuedOperator = clickedButton->text();
+       if (isBracketClosed())
+           display_h->setText(display_h->text() + queuedOperator);
+       else
+           display_h->setText(display_h->text() + display->text() + queuedOperator);
        display->setText("0");
     }
 }
@@ -506,7 +544,18 @@ std::string preParseExpression(std::string &text, const std::string& find, const
 }
 void PiCalcQT::equalsClicked()
 {
-    display_h->setText(display_h->text() + display->text());
+    if (errorFlag)
+    {
+        clearAll();
+        return;
+    }
+    if (display_h->text().isEmpty())
+        display_h->setText("0");
+    if ((display_h->text().back() == "÷" or display_h->text().back() == "×" or display_h->text().back() == "-" or display_h->text().back() == "+" or display_h->text().back() == "d" or display_h->text().back() == "("))
+        display_h->setText(display_h->text() + display->text());
+    else if (getDisplayData(*display) != 0)
+        display_h->setText(display_h->text() + display->text());
+    /* Close brackets */
     std::string expression_str = display_h->text().toStdString();
     int clb = std::count(expression_str.begin(), expression_str.end(), '(');
     int crb = std::count(expression_str.begin(), expression_str.end(), ')');
@@ -515,27 +564,17 @@ void PiCalcQT::equalsClicked()
             expression_str = expression_str + ")";
         }
     display_h->setText(QString::fromStdString(expression_str));
+    /* Convert special symbols to normal symbols so tinyexpr can parse expression*/
     preParseExpression(expression_str, std::string("×"), std::string("*"));
     preParseExpression(expression_str, std::string("÷"), std::string("/"));
     preParseExpression(expression_str, std::string("↑"), std::string("^"));
+    preParseExpression(expression_str, std::string("π"), std::string("pi"));
+    preParseExpression(expression_str, std::string("!"), std::string("fac"));
     preParseExpression(expression_str, std::string("√"), std::string("sqrt"));
     preParseExpression(expression_str, std::string("Mod"), std::string("%"));
-    typedef exprtk::symbol_table<long double> symbol_table_t;
-    typedef exprtk::expression<long double> expression_t;
-    typedef exprtk::parser<long double> parser_t;
-    symbol_table_t symbol_table;
-    symbol_table.add_constants();
-    parser_t parser;
-    expression_t expression;
-    expression.register_symbol_table(symbol_table);
-    if (!parser.compile(expression_str,expression))
-       {
-        statusBar()->showMessage("ERROR", 3000);
-       }
     display_h->setText(display_h->text() + "=");
-    long double result = expression.value();
+    long double result = te_interp(expression_str.c_str(), 0);
     updateDisplayData(toQString(result));
-    noOperand = true;
     resetFlag = true;
     queuedOperator.clear();
 }
@@ -544,4 +583,3 @@ void PiCalcQT::abort()
     clearAll();
     updateDisplayData("Error");
 }
-
