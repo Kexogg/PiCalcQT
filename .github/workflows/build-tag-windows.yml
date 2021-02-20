@@ -1,4 +1,4 @@
-name: build-on-push-windows
+name: build-on-tag-windows
 on:
   push:
     branches:
