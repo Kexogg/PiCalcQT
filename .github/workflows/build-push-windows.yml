@@ -29,6 +29,7 @@ jobs:
           windeployqt PiCalcQT.exe
           rm *.o
           rm *.cpp
+          rm *.h
       - name: Achive release
         run: |
           cd build
