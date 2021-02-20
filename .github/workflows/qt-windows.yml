@@ -6,7 +6,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
@@ -14,7 +13,7 @@ jobs:
           host: 'windows'
           target: 'desktop'
           arch: 'win64_mingw81'
-      - name: Configure project
+      - name: Configure and build project
         run: |
           mkdir build
           cd build
@@ -22,3 +21,22 @@ jobs:
           qmake ../PiCalcQT.pro
           mingw32-make 
         shell: cmd
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v0.2
+          release_name: Beta 2
+          draft: false
+          prerelease: true
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/PiCalcQT.exe
+          asset_name: PiCalcQT.exe
