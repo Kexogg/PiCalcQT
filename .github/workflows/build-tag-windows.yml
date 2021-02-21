@@ -33,14 +33,18 @@ jobs:
           windeployqt PiCalcQT.exe
           rm *.o
           rm *.cpp
-      - name: Achive release
+      - name: Create zip archive
         run: |
           cd build
           powershell "Compress-Archive release PiCalcQT.zip"
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        shell: bash
       - name: Create Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ github.ref }}
+          automatic_release_tag: ${{ steps.get_version.outputs.VERSION }}
           prerelease: false
           files: build/PiCalcQT.zip
