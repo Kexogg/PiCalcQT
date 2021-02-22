@@ -35,8 +35,8 @@ PiCalcQT::PiCalcQT(QWidget *parent) : QMainWindow(parent)
     QAction *tax = layoutMenu->addAction(tr("&Taxes"), this, &PiCalcQT::switchToTax);
     QAction *adv = layoutMenu->addAction(tr("&Advanced"), this, &PiCalcQT::switchToAdv);
     QAction *def = layoutMenu->addAction(tr("&Default"), this, &PiCalcQT::switchToDef);
-    /*tri = fileMenu->addAction(tr("&Swicth to DEG"), this, &PiCalcQT::trigonometrySwitch);
-    tri->setVisible(false); temporarily removed. */
+    tri = fileMenu->addAction(tr("&Swicth to DEG"), this, &PiCalcQT::trigonometrySwitch);
+    tri->setVisible(false);
     layoutList->addAction(tax);
     layoutList->addAction(adv);
     layoutList->addAction(def);
@@ -205,7 +205,7 @@ void PiCalcQT::updateDisplayData(const QString &text)
         errorFlag = true;
         return;
     }
-    else if (text == "inf") {
+    else if (text == "inf" or text == "-inf") {
         display->setText(QString("Infinity/Overflow").toUtf8().constData());
         errorFlag = true;
         return;
@@ -223,7 +223,7 @@ void PiCalcQT::switchToTax()
 {
     mainlayout->setContentsMargins(10, 10, 10, 0);
     advmodule->hide();
-    //tri->setVisible(false);
+    tri->setVisible(false);
     windowlayout->removeWidget(advmodule);
     windowlayout->addWidget(taxmodule, 6, 0, 1, 5);
     taxmodule->show();
@@ -238,10 +238,9 @@ void PiCalcQT::switchToAdv()
     windowlayout->removeWidget(taxmodule);
     windowlayout->addWidget(advmodule, 6, 0, 2, 5);
     advmodule->show();
-    //status->show();
-    status->hide();
-    //tri->setVisible(true);
-    //status->setText(measureUnit);
+    status->show();
+    tri->setVisible(true);
+    status->setText(measureUnit);
     adjustSize();
 }
 void PiCalcQT::switchToDef()
@@ -250,7 +249,7 @@ void PiCalcQT::switchToDef()
     advmodule->hide();
     status->hide();
     taxmodule->hide();
-    //tri->setVisible(false);
+    tri->setVisible(false);
     windowlayout->removeWidget(advmodule);
     windowlayout->removeWidget(taxmodule);
     mainwindow->adjustSize();
@@ -262,7 +261,7 @@ void PiCalcQT::about()
     QMessageBox::about(this, "About PiCalcQT", "<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT." \
                         "<br>See <a href=\"https://github.com/Kexogg/PiCalcQT\">my GitHub page</a> for updates and more information" \
                         "<br>Build " + QStringLiteral(__DATE__) + " " + QStringLiteral(__TIME__) + " - BETA 3.<br>© 2021 Alexander Mazhirin" \
-                        "<br>This application uses <a href=\"https://codeplea.com/tinyexpr\">tinyexpr</a> by Lewis Van Winkle</p>");
+                        "<br>This application uses modified version of <a href=\"https://codeplea.com/tinyexpr\">tinyexpr</a> by Lewis Van Winkle</p>");
 }
 void PiCalcQT::digitClicked()
 {
@@ -369,12 +368,6 @@ void PiCalcQT::unaryOperatorClicked()
         status->setText("Tax rate: " + QString::number(tax) + "%");
         historylock = true;
     }
-    /*if (resetFlag)
-    {
-        resetFlag = false;
-        display_h->setText(display->text());
-        display->clear();
-    }*/
     //ADVANCED
     if (queuedUnaryOperator == "n!")
     {
@@ -426,6 +419,8 @@ void PiCalcQT::unaryOperatorClicked()
         statusBar()->showMessage("Memory updated | Ready", 2000);
         historylock = true;
     }
+    else if (measureUnit == "DEG" and (queuedUnaryOperator == "sin" or queuedUnaryOperator == "cos" or queuedUnaryOperator == "tan"))
+        queuedUnaryOperator = queuedUnaryOperator + "(deg2rad";
     if (historylock)
     {
         updateDisplayData(toQString(result));
@@ -517,7 +512,7 @@ void PiCalcQT::operatorClicked()
        display->setText("0");
     }
 }
-/*void PiCalcQT::trigonometrySwitch()
+void PiCalcQT::trigonometrySwitch()
 {
     if (measureUnit == "RAD")
     {
@@ -531,10 +526,11 @@ void PiCalcQT::operatorClicked()
         status->setText(measureUnit);
         tri->setText("Switch to DEG");
     }
-}*/
+}
 std::string preParseExpression(std::string &text, const std::string& find, const std::string& replace) {
     size_t start_pos = 0;
-    while((start_pos = text.find(find, start_pos)) != std::string::npos) {
+    while((start_pos = text.find(find, start_pos)) != std::string::npos)
+    {
         text.replace(start_pos, find.length(), replace);
         start_pos += replace.length();
     }

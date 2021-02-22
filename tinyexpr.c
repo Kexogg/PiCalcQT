@@ -148,6 +148,9 @@ static double ncr(double n, double r) {
     return result;
 }
 static double npr(double n, double r) {return ncr(n, r) * fac(r);}
+/* Additional conversion functions */
+static double deg2rad(double a) {return a * M_PI / 180;}
+static double rad2deg(double a) {return a * 180 / M_PI;}
 
 static const te_variable functions[] = {
     /* must be in alphabetical order */
@@ -159,6 +162,7 @@ static const te_variable functions[] = {
     {"ceil", ceil,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"cos", cos,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"cosh", cosh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"deg2rad", deg2rad, TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"e", e,          TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"exp", exp,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"fac", fac,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
@@ -174,6 +178,7 @@ static const te_variable functions[] = {
     {"npr", npr,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"pi", pi,        TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"pow", pow,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"rad2deg", rad2deg, TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sin", sin,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sinh", sinh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sqrt", sqrt,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
