@@ -45,6 +45,8 @@ Thumbs.db
 .*.swp
 
 # Visual Studio generated files
+/.vs
+
 *.ib_pdb_index
 *.idb
 *.ilk
@@ -71,3 +73,7 @@ Thumbs.db
 *.dll
 *.exe
 
+# Builds
+/debug
+/release
+/x64

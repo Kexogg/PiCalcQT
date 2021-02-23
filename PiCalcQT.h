@@ -70,12 +70,14 @@ private:
     void switchToAdv();
     void switchToDef();
     void about();
+    void setFloatPrecision();
     //Variables
-    int displayLimit = 15;
+    int displayLimit = 16;
+    int floatPrecision = 5;
     long double memory;
     bool resetFlag = false;
     bool errorFlag = false;
-    float tax = 20; //VAT 20%
+    float tax = 20;
 };
 
 #endif
