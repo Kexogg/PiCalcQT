@@ -194,8 +194,9 @@ QString PiCalcQT::toQString(long double& number)
 }
 QString PiCalcQT::lastChar(QLabel& displayname)
 {
-	if (!displayname.text().isEmpty())
-		return displayname.text().back();
+	if (!displayname.text().isEmpty()){
+        return QString(displayname.text().back());
+	}
 	else
 		return "";
 }
