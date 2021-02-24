@@ -153,8 +153,8 @@ static double ncr(double n, double r) {
 }
 static double npr(double n, double r) {return ncr(n, r) * fac(r);}
 /* Additional conversion functions */
-static double deg2rad(double a) {return a * M_PI / 180;}
-static double rad2deg(double a) {return a * 180 / M_PI;}
+static double d2r(double a) {return a * M_PI / 180;}
+static double r2d(double a) {return a * 180 / M_PI;}
 
 static const te_variable functions[] = {
     /* must be in alphabetical order */
@@ -163,14 +163,14 @@ static const te_variable functions[] = {
     {"asin", asin,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"atan", atan,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"atan2", atan2,  TE_FUNCTION2 | TE_FLAG_PURE, 0},
-//    {"ceil", ceil,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
+//  {"ceil", ceil,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"cos", cos,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"cosh", cosh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"deg2rad", deg2rad, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"d2r", d2r,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"e", e,          TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"exp", exp,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"fac", fac,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
-//    {"floor", floor,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
+//  {"floor", floor,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"ln", log,       TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #ifdef TE_NAT_LOG
     {"log", log,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
@@ -182,7 +182,7 @@ static const te_variable functions[] = {
     {"npr", npr,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"pi", pi,        TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"pow", pow,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"rad2deg", rad2deg, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"r2d", r2d,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sin", sin,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sinh", sinh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sqrt", sqrt,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
