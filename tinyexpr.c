@@ -22,6 +22,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+/* This version of tinyexpr is modified for this project */
+
 /* COMPILE TIME OPTIONS */
 
 /* Exponentiation associativity:

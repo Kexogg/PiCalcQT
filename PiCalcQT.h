@@ -10,14 +10,11 @@ QT_BEGIN_NAMESPACE
 class QLabel;
 QT_END_NAMESPACE
 class Button;
-
 class PiCalcQT : public QMainWindow
 {
 	Q_OBJECT
-
 public:
 	PiCalcQT(QWidget* parent = nullptr);
-
 private slots:
 	void digitClicked();
 	void operatorClicked();
@@ -79,5 +76,4 @@ private:
 	bool errorFlag = false;
 	float tax = 20;
 };
-
 #endif

@@ -69,8 +69,7 @@ PiCalcQT::PiCalcQT(QWidget* parent) : QMainWindow(parent)
 	display->setAlignment(Qt::AlignRight);
 	displaymodule->setStyleSheet( //FIXME: css parse errors
 		".QWidget {background-color: white; border-radius: 0.25em; border: 1px solid lightgray; margin: 5px 10px 0;}"
-		"QLabel {color: black; padding: 0 5px 5px;}"
-		"QLabel#display_h {padding: 5px 5px; 0;}");
+		"QLabel {color: black; padding: 0 5px 5px;}");
 	//HISTORY DISPLAY SETUP
 	display_h = new QLabel("");
 	display_h->setAlignment(Qt::AlignRight);
@@ -194,9 +193,8 @@ QString PiCalcQT::toQString(long double& number)
 }
 QString PiCalcQT::lastChar(QLabel& displayname)
 {
-	if (!displayname.text().isEmpty()){
+	if (!displayname.text().isEmpty())
         return QString(displayname.text().back());
-	}
 	else
 		return "";
 }
@@ -272,7 +270,7 @@ void PiCalcQT::switchToDef()
 }
 void PiCalcQT::about()
 {
-	QMessageBox::about(this, "About PiCalcQT", "<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ && QT." \
+	QMessageBox::about(this, "About PiCalcQT", "<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT." \
 		"<br>See <a href=\"https://github.com/Kexogg/PiCalcQT\">my GitHub page</a> for updates or more information" \
 		"<br>Build " + QStringLiteral(__DATE__) + " " + QStringLiteral(__TIME__) + " - BETA 3.<br>© 2021 Alexander Mazhirin" \
 		"<br>This application uses modified version of <a href=\"https://codeplea.com/tinyexpr\">tinyexpr</a> by Lewis Van Winkle</p>");
@@ -462,6 +460,7 @@ void PiCalcQT::unaryOperatorClicked()
 			display_h->setText(display_h->text() + queuedUnaryOperator);
 		else
 			display_h->setText(display_h->text() + display->text() + "×" + queuedUnaryOperator);
+		queuedOperator.clear();
 		display->setText("0");
 	}
 	if (!statusbarlock)
