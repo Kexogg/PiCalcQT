@@ -50,7 +50,6 @@ private:
 	QLabel* display_h;
 	QLabel* status;
 	QAction* tri;
-	QStatusBar* bar = nullptr;
 	QString queuedOperator;
 	QString queuedUnaryOperator;
 	QString measureUnit = "RAD";

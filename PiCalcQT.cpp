@@ -86,7 +86,7 @@ void PiCalcQT::setupUI()
 	Button* setMemory = addButton("MS", SLOT(unaryOperatorClicked()));
 	Button* addToMemory = addButton("M+", SLOT(unaryOperatorClicked()));
 	//DEFAULT
-	Button* backspace = addButton(tr("←"), SLOT(backspace()));
+	Button* backspace = addButton("←", SLOT(backspace()));
 	Button* clear = addButton("CE", SLOT(clear()));
 	Button* clearAll = addButton("C", SLOT(clearAll()));
 	Button* divide = addButton("÷", SLOT(operatorClicked()));
@@ -270,10 +270,19 @@ void PiCalcQT::switchToDef()
 }
 void PiCalcQT::about()
 {
-	QMessageBox::about(this, "About PiCalcQT", "<p><b>PiCalcQT</b> is a calculator for Raspberry PI written in C++ and QT." \
+	QMessageBox about;
+	QPixmap pixmapIcon = QIcon(":/Logo.png").pixmap(48);
+	about.setParent(0);
+	about.setText("<b>About PiCalcQT</b>");
+	about.setInformativeText("<p>PiCalcQT is a calculator for Raspberry PI written in C++ and QT." \
 		"<br>See <a href=\"https://github.com/Kexogg/PiCalcQT\">my GitHub page</a> for updates or more information" \
 		"<br>Build " + QStringLiteral(__DATE__) + " " + QStringLiteral(__TIME__) + " - BETA 3.<br>© 2021 Alexander Mazhirin" \
 		"<br>This application uses modified version of <a href=\"https://codeplea.com/tinyexpr\">tinyexpr</a> by Lewis Van Winkle</p>");
+	about.setStandardButtons(QMessageBox::Ok);
+	about.setDefaultButton(QMessageBox::Ok);
+	about.setWindowTitle("About");
+	about.setIconPixmap(pixmapIcon);
+	about.exec();
 }
 void PiCalcQT::setFloatPrecision()
 {
@@ -348,7 +357,6 @@ void PiCalcQT::unaryOperatorClicked()
 {
 	if (errorFlag)
 		clearAll();
-
 	Button* clickedButton = qobject_cast<Button*>(sender());
 	queuedUnaryOperator = clickedButton->text();
 	long double operand = getDisplayData(*display);
@@ -440,11 +448,17 @@ void PiCalcQT::unaryOperatorClicked()
 		queuedUnaryOperator.clear();
 	}
 	else
-	{
+	{	
 		if (!bracketlock)
 			queuedUnaryOperator = queuedUnaryOperator + "(";
-		if (resetFlag) {
-			display_h->setText(queuedUnaryOperator + display->text());
+		if (resetFlag)
+		{
+			display_h->clear();
+			resetFlag = false;
+			if (bracketlock)
+				display_h->setText(display->text() + "×" + queuedUnaryOperator);
+			else
+				display_h->setText(queuedUnaryOperator + display->text());
 			display->setText("0");
 			equalsClicked();
 			return;
@@ -456,6 +470,7 @@ void PiCalcQT::unaryOperatorClicked()
 			else
 				display_h->setText(display_h->text() + "×" + display->text() + "×" + queuedUnaryOperator);
 		}
+		
 		else if (getDisplayData(*display) == 0)
 			display_h->setText(display_h->text() + queuedUnaryOperator);
 		else
@@ -561,8 +576,6 @@ void PiCalcQT::equalsClicked()
 		clearAll();
 		return;
 	}
-	if (display_h->text().isEmpty())
-		display_h->setText("0");
 	if (lastChar(*display_h) == "÷" || lastChar(*display_h) == "×" || lastChar(*display_h) == "-" || lastChar(*display_h) == "+" || lastChar(*display_h) == "d" || lastChar(*display_h) == "(")
 		display_h->setText(display_h->text() + display->text());
 	else if ((lastChar(*display_h) == "e" || lastChar(*display_h) == "π") && getDisplayData(*display) != 0)
