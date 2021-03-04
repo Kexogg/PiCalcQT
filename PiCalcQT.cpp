@@ -16,43 +16,54 @@ PiCalcQT::PiCalcQT(QWidget* parent) : QMainWindow(parent)
 	setWindowTitle(tr("PiCalcQT"));
 	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	//DECLARE WIDGETS AND LAYOUTS
-	windowlayout = new QGridLayout;
-	displaylayout = new QGridLayout;
-	mainlayout = new QGridLayout;
 	advlayout = new QGridLayout;
-	taxlayout = new QGridLayout;
-	mainwindow = new QWidget;
-	displaymodule = new QWidget;
-	mainmodule = new QWidget;
 	advmodule = new QWidget;
+	displaylayout = new QGridLayout;
+	displaymodule = new QWidget;
+	mainlayout = new QGridLayout;
+	mainmodule = new QWidget;
+	mainwindow = new QWidget;
+	taxlayout = new QGridLayout;
 	taxmodule = new QWidget;
+	windowlayout = new QGridLayout;
 	//TOP MENU SETUP
 	fileMenu = menuBar()->addMenu(tr("File"));
 	layoutMenu = menuBar()->addMenu(tr("Layout"));
 	QActionGroup* layoutList = new QActionGroup(this);
-	QAction* abt = fileMenu->addAction(tr("&About"), this, &PiCalcQT::about);
-	QAction* abtQT = fileMenu->addAction(tr("&About Qt"), qApp, &QApplication::aboutQt);
-	QAction* fpp = fileMenu->addAction(tr("&Set precision"), this, &PiCalcQT::setFloatPrecision);
-	QAction* quit = fileMenu->addAction(tr("&Quit"), qApp, &QApplication::quit);
-	tri = fileMenu->addAction(tr("&Swicth to DEG"), this, &PiCalcQT::trigonometrySwitch);
-	QAction* tax = layoutMenu->addAction(tr("&Taxes"), this, &PiCalcQT::switchToTax);
-	QAction* adv = layoutMenu->addAction(tr("&Advanced"), this, &PiCalcQT::switchToAdv);
-	QAction* def = layoutMenu->addAction(tr("&Default"), this, &PiCalcQT::switchToDef);
-	tri->setVisible(false);
-	layoutList->addAction(tax);
+	QActionGroup* trigonometryList = new QActionGroup(this);
+	QAction* abt = fileMenu->addAction(tr("About"), this, &PiCalcQT::about);
+	QAction* abtQT = fileMenu->addAction(tr("About Qt"), qApp, &QApplication::aboutQt);
+	QAction* adv = layoutMenu->addAction(tr("Advanced"), this, &PiCalcQT::switchToAdv);
+	QAction* def = layoutMenu->addAction(tr("Default"), this, &PiCalcQT::switchToDef);
+	QAction* fpp = fileMenu->addAction(tr("Set precision"), this, &PiCalcQT::setFloatPrecision);
+	trigonometryMenu = fileMenu->addMenu(tr("Trigonometry"));
+	trigonometryMenu->setEnabled(false);
+	QAction* quit = fileMenu->addAction(tr("Quit"), qApp, &QApplication::quit);
+	QAction* tax = layoutMenu->addAction(tr("Taxes"), this, &PiCalcQT::switchToTax);
+	QAction* toDEG = trigonometryMenu->addAction(tr("Swicth to DEG"), this, &PiCalcQT::toDEG);
+	QAction* toRAD = trigonometryMenu->addAction(tr("Swicth to RAD"), this, &PiCalcQT::toRAD);
+	QAction* toGRAD = trigonometryMenu->addAction(tr("Swicth to GRAD"), this, &PiCalcQT::toGRAD);
 	layoutList->addAction(adv);
 	layoutList->addAction(def);
-	tax->setCheckable(true);
+	layoutList->addAction(tax);
+	trigonometryList->addAction(toDEG);
+	trigonometryList->addAction(toRAD);
+	trigonometryList->addAction(toGRAD);
+	toDEG->setCheckable(true);
+	toRAD->setCheckable(true);
+	toRAD->setChecked(true);
+	toGRAD->setCheckable(true);
 	adv->setCheckable(true);
 	def->setCheckable(true);
 	def->setChecked(true);
-	quit->setStatusTip("Quit this application");
-	tax->setStatusTip("Switch to taxes mode");
-	adv->setStatusTip("Switch to advanced mode");
-	def->setStatusTip("Switch to default mode");
+	tax->setCheckable(true);
 	abt->setStatusTip("About this application");
 	abtQT->setStatusTip("About QT");
+	adv->setStatusTip("Switch to advanced mode");
+	def->setStatusTip("Switch to default mode");
 	fpp->setStatusTip("Set precision for floating point");
+	quit->setStatusTip("Quit this application");
+	tax->setStatusTip("Switch to taxes mode");
 	//STATUS BAR SETUP
 	status = new QLabel("status", this);
 	status->setStyleSheet("margin-right: 2px; border-top: none; border: none;");
@@ -81,41 +92,41 @@ void PiCalcQT::setupUI()
 	for (int i = 0; i < Numpad; ++i)
 		digitButtons[i] = addButton(QString::number(i), SLOT(digitClicked()));
 	//MEMORY
+	Button* addToMemory = addButton("M+", SLOT(unaryOperatorClicked()));
 	Button* clearMemory = addButton("MC", SLOT(unaryOperatorClicked()));
 	Button* readMemory = addButton("MR", SLOT(unaryOperatorClicked()));
 	Button* setMemory = addButton("MS", SLOT(unaryOperatorClicked()));
-	Button* addToMemory = addButton("M+", SLOT(unaryOperatorClicked()));
 	//DEFAULT
 	Button* backspace = addButton("←", SLOT(backspace()));
+	Button* changeSign = addButton("±", SLOT(changeSign()));
 	Button* clear = addButton("CE", SLOT(clear()));
 	Button* clearAll = addButton("C", SLOT(clearAll()));
 	Button* divide = addButton("÷", SLOT(operatorClicked()));
-	Button* multiply = addButton("×", SLOT(operatorClicked()));
-	Button* minus = addButton("-", SLOT(operatorClicked()));
-	Button* plus = addButton("+", SLOT(operatorClicked()));
-	Button* squareRoot = addButton("√", SLOT(unaryOperatorClicked()));
 	Button* equal = addButton("=", SLOT(equalsClicked()));
+	Button* minus = addButton("-", SLOT(operatorClicked()));
+	Button* multiply = addButton("×", SLOT(operatorClicked()));
+	Button* plus = addButton("+", SLOT(operatorClicked()));
 	Button* point = addButton(".", SLOT(pointClicked()));
-	Button* changeSign = addButton("±", SLOT(changeSign()));
+	Button* squareRoot = addButton("√", SLOT(unaryOperatorClicked()));
 	//ADVANCED
 	Button* abs = addButton("|𝑥|", SLOT(unaryOperatorClicked()));
-	Button* power = addButton("↑", SLOT(operatorClicked()));
-	Button* mod = addButton("Mod", SLOT(operatorClicked()));
-	Button* multiplicativeinverse = addButton("1/x", SLOT(unaryOperatorClicked()));
-	Button* factorial = addButton("n!", SLOT(unaryOperatorClicked()));
-	Button* pi = addButton("π", SLOT(unaryOperatorClicked()));
-	Button* inserte = addButton("e", SLOT(unaryOperatorClicked()));
-	Button* sin = addButton("sin", SLOT(unaryOperatorClicked()));
-	Button* cos = addButton("cos", SLOT(unaryOperatorClicked()));
-	Button* tan = addButton("tan", SLOT(unaryOperatorClicked()));
-	Button* ln = addButton("ln", SLOT(unaryOperatorClicked()));
-	Button* log = addButton("log", SLOT(unaryOperatorClicked()));
 	Button* bracketL = addButton("(", SLOT(bracketClicked()));
 	Button* bracketR = addButton(")", SLOT(bracketClicked()));
+	Button* cos = addButton("cos", SLOT(unaryOperatorClicked()));
+	Button* factorial = addButton("n!", SLOT(unaryOperatorClicked()));
+	Button* inserte = addButton("e", SLOT(unaryOperatorClicked()));
+	Button* ln = addButton("ln", SLOT(unaryOperatorClicked()));
+	Button* log = addButton("log", SLOT(unaryOperatorClicked()));
+	Button* mod = addButton("Mod", SLOT(operatorClicked()));
+	Button* multiplicativeinverse = addButton("1/x", SLOT(unaryOperatorClicked()));
+	Button* pi = addButton("π", SLOT(unaryOperatorClicked()));
+	Button* power = addButton("↑", SLOT(operatorClicked()));
+	Button* sin = addButton("sin", SLOT(unaryOperatorClicked()));
+	Button* tan = addButton("tan", SLOT(unaryOperatorClicked()));
 	//TAXES
-	Button* TAXset = addButton("RATE", SLOT(unaryOperatorClicked()));
 	Button* TAXadd = addButton("TAX+", SLOT(unaryOperatorClicked()));
 	Button* TAXremove = addButton("TAX-", SLOT(unaryOperatorClicked()));
+	Button* TAXset = addButton("RATE", SLOT(unaryOperatorClicked()));
 	Button* TAXshow = addButton("TAX", SLOT(unaryOperatorClicked()));
 	//LAYOUT SETUP
 	windowlayout->setSpacing(0);
@@ -194,7 +205,7 @@ QString PiCalcQT::toQString(long double& number)
 QString PiCalcQT::lastChar(QLabel& displayname)
 {
 	if (!displayname.text().isEmpty())
-        return QString(displayname.text().back());
+		return QString(displayname.text().back());
 	else
 		return "";
 }
@@ -235,7 +246,7 @@ void PiCalcQT::switchToTax()
 {
 	mainlayout->setContentsMargins(10, 10, 10, 0);
 	advmodule->hide();
-	tri->setVisible(false);
+	trigonometryMenu->setEnabled(false);
 	windowlayout->removeWidget(advmodule);
 	windowlayout->addWidget(taxmodule, 6, 0, 1, 5);
 	taxmodule->show();
@@ -243,6 +254,7 @@ void PiCalcQT::switchToTax()
 	status->setText("Tax rate: " + QString::number(tax) + "%");
 	adjustSize();
 }
+
 void PiCalcQT::switchToAdv()
 {
 	mainlayout->setContentsMargins(10, 10, 10, 0);
@@ -251,7 +263,7 @@ void PiCalcQT::switchToAdv()
 	windowlayout->addWidget(advmodule, 6, 0, 2, 5);
 	advmodule->show();
 	status->show();
-	tri->setVisible(true);
+	trigonometryMenu->setEnabled(true);
 	status->setText(measureUnit);
 	adjustSize();
 }
@@ -261,12 +273,27 @@ void PiCalcQT::switchToDef()
 	advmodule->hide();
 	status->hide();
 	taxmodule->hide();
-	tri->setVisible(false);
+	trigonometryMenu->setEnabled(false);
 	windowlayout->removeWidget(advmodule);
 	windowlayout->removeWidget(taxmodule);
 	mainwindow->adjustSize();
 	mainmodule->adjustSize();
 	adjustSize(); //AdjustSize() MUST be called 3 times here.
+}
+void PiCalcQT::toRAD()
+{
+	measureUnit = "RAD";
+	status->setText(measureUnit);
+}
+void PiCalcQT::toDEG()
+{
+	measureUnit = "DEG";
+	status->setText(measureUnit);
+}
+void PiCalcQT::toGRAD()
+{
+	measureUnit = "GRAD";
+	status->setText(measureUnit);
 }
 void PiCalcQT::about()
 {
@@ -440,15 +467,18 @@ void PiCalcQT::unaryOperatorClicked()
 		statusBar()->showMessage("Memory updated | Ready", 2000);
 		historylock = true;
 	}
-	else if (measureUnit == "DEG" && (queuedUnaryOperator == "sin" || queuedUnaryOperator == "cos" || queuedUnaryOperator == "tan"))
-		queuedUnaryOperator = queuedUnaryOperator + "(d2r";
+	else if (queuedUnaryOperator == "sin" || queuedUnaryOperator == "cos" || queuedUnaryOperator == "tan")
+		if (measureUnit == "DEG")
+			queuedUnaryOperator = queuedUnaryOperator + "(d2r";
+		else if (measureUnit == "GRAD")
+			queuedUnaryOperator = queuedUnaryOperator + "(g2r";
 	if (historylock)
 	{
 		updateDisplayData(toQString(result));
 		queuedUnaryOperator.clear();
 	}
 	else
-	{	
+	{
 		if (!bracketlock)
 			queuedUnaryOperator = queuedUnaryOperator + "(";
 		if (resetFlag)
@@ -470,7 +500,6 @@ void PiCalcQT::unaryOperatorClicked()
 			else
 				display_h->setText(display_h->text() + "×" + display->text() + "×" + queuedUnaryOperator);
 		}
-		
 		else if (getDisplayData(*display) == 0)
 			display_h->setText(display_h->text() + queuedUnaryOperator);
 		else
@@ -545,21 +574,6 @@ void PiCalcQT::operatorClicked()
 		display->setText("0");
 	}
 }
-void PiCalcQT::trigonometrySwitch()
-{
-	if (measureUnit == "RAD")
-	{
-		measureUnit = "DEG";
-		status->setText(measureUnit);
-		tri->setText("Switch to RAD");
-	}
-	else
-	{
-		measureUnit = "RAD";
-		status->setText(measureUnit);
-		tri->setText("Switch to DEG");
-	}
-}
 std::string preParseExpression(std::string& text, const std::string& find, const std::string& replace) {
 	size_t start_pos = 0;
 	while ((start_pos = text.find(find, start_pos)) != std::string::npos)
@@ -594,13 +608,13 @@ void PiCalcQT::equalsClicked()
 	}
 	display_h->setText(QString::fromStdString(expression_str));
 	/* Convert special symbols to normal symbols so tinyexpr can parse expression*/
+	preParseExpression(expression_str, std::string("!"), std::string("fac"));
 	preParseExpression(expression_str, std::string("×"), std::string("*"));
 	preParseExpression(expression_str, std::string("÷"), std::string("/"));
-	preParseExpression(expression_str, std::string("↑"), std::string("^"));
-	preParseExpression(expression_str, std::string("π"), std::string("pi"));
-	preParseExpression(expression_str, std::string("!"), std::string("fac"));
 	preParseExpression(expression_str, std::string("√"), std::string("sqrt"));
+	preParseExpression(expression_str, std::string("↑"), std::string("^"));
 	preParseExpression(expression_str, std::string("Mod"), std::string("%"));
+	preParseExpression(expression_str, std::string("π"), std::string("pi"));
 	display_h->setText(display_h->text() + "=");
 	std::stringstream stream;
 	long double result = te_interp(expression_str.c_str(), 0);

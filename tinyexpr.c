@@ -157,6 +157,7 @@ static double npr(double n, double r) {return ncr(n, r) * fac(r);}
 /* Additional conversion functions */
 static double d2r(double a) {return a * M_PI / 180;}
 static double r2d(double a) {return a * 180 / M_PI;}
+static double g2r(double a) {return a * M_PI / 200;}
 
 static const te_variable functions[] = {
     /* must be in alphabetical order */
@@ -173,6 +174,7 @@ static const te_variable functions[] = {
     {"exp", exp,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"fac", fac,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
 //  {"floor", floor,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"g2r", g2r,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"ln", log,       TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #ifdef TE_NAT_LOG
     {"log", log,      TE_FUNCTION1 | TE_FLAG_PURE, 0},

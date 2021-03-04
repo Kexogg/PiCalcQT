@@ -16,16 +16,16 @@ class PiCalcQT : public QMainWindow
 public:
 	PiCalcQT(QWidget* parent = nullptr);
 private slots:
-	void digitClicked();
-	void operatorClicked();
-	void unaryOperatorClicked();
-	void bracketClicked();
-	void equalsClicked();
-	void pointClicked();
-	void changeSign();
 	void backspace();
+	void bracketClicked();
+	void changeSign();
 	void clear();
 	void clearAll();
+	void digitClicked();
+	void equalsClicked();
+	void operatorClicked();
+	void pointClicked();
+	void unaryOperatorClicked();
 private:
 	//UI
 	Button* addButton(const QString& text, const char* member);
@@ -34,45 +34,47 @@ private:
 		Numpad = 10
 	};
 	Button* digitButtons[Numpad];
-	QGridLayout* windowlayout;
+	QGridLayout* advlayout;
 	QGridLayout* displaylayout;
 	QGridLayout* mainlayout;
-	QGridLayout* advlayout;
 	QGridLayout* taxlayout;
-	QWidget* mainwindow;
-	QWidget* displaymodule;
-	QWidget* mainmodule;
-	QWidget* advmodule;
-	QWidget* taxmodule;
-	QMenu* fileMenu;
-	QMenu* layoutMenu;
+	QGridLayout* windowlayout;
 	QLabel* display;
 	QLabel* display_h;
 	QLabel* status;
-	QAction* tri;
+	QMenu* fileMenu;
+	QMenu* layoutMenu;
+	QMenu* trigonometryMenu;
+	QString measureUnit = "RAD";
 	QString queuedOperator;
 	QString queuedUnaryOperator;
-	QString measureUnit = "RAD";
+	QWidget* advmodule;
+	QWidget* displaymodule;
+	QWidget* mainmodule;
+	QWidget* mainwindow;
+	QWidget* taxmodule;
 	//Functions
-	QString toQString(long double& number);
-	QString lastChar(QLabel& displayname);
-	long double getDisplayData(QLabel& displayname);
 	bool bracketClosed();
-	void updateDisplayData(const QString& text);
-	void setupUI();
+	long double getDisplayData(QLabel& displayname);
+	QString lastChar(QLabel& displayname);
+	QString toQString(long double& number);
 	void abort();
-	void trigonometrySwitch();
-	void switchToTax();
-	void switchToAdv();
-	void switchToDef();
 	void about();
 	void setFloatPrecision();
+	void setupUI();
+	void switchToAdv();
+	void switchToDef();
+	void switchToTax();
+	void toRAD();
+	void toDEG();
+	void toGRAD();
+	void updateDisplayData(const QString& text);
 	//Variables
+	bool errorFlag = false;
+	bool resetFlag = false;
+	float tax = 20;
 	int displayLimit = 16;
 	int floatPrecision = 5;
 	long double memory;
-	bool resetFlag = false;
-	bool errorFlag = false;
-	float tax = 20;
 };
 #endif
