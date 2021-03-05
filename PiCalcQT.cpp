@@ -254,7 +254,6 @@ void PiCalcQT::switchToTax()
 	status->setText("Tax rate: " + QString::number(tax) + "%");
 	adjustSize();
 }
-
 void PiCalcQT::switchToAdv()
 {
 	mainlayout->setContentsMargins(10, 10, 10, 0);
@@ -467,11 +466,6 @@ void PiCalcQT::unaryOperatorClicked()
 		statusBar()->showMessage("Memory updated | Ready", 2000);
 		historylock = true;
 	}
-	else if (queuedUnaryOperator == "sin" || queuedUnaryOperator == "cos" || queuedUnaryOperator == "tan")
-		if (measureUnit == "DEG")
-			queuedUnaryOperator = queuedUnaryOperator + "(d2r";
-		else if (measureUnit == "GRAD")
-			queuedUnaryOperator = queuedUnaryOperator + "(g2r";
 	if (historylock)
 	{
 		updateDisplayData(toQString(result));
@@ -493,7 +487,7 @@ void PiCalcQT::unaryOperatorClicked()
 			equalsClicked();
 			return;
 		}
-		else if (lastChar(*display_h) == "e" || lastChar(*display_h) == "π")
+		else if (lastChar(*display_h) == "e" || lastChar(*display_h) == "π" || lastChar(*display_h) == ")")
 		{
 			if (getDisplayData(*display) == 0)
 				display_h->setText(display_h->text() + "×" + queuedUnaryOperator);
@@ -574,12 +568,49 @@ void PiCalcQT::operatorClicked()
 		display->setText("0");
 	}
 }
-std::string preParseExpression(std::string& text, const std::string& find, const std::string& replace) {
+std::string replaceSymbols(std::string& text, const std::string& find, const std::string& replace) {
 	size_t start_pos = 0;
 	while ((start_pos = text.find(find, start_pos)) != std::string::npos)
 	{
 		text.replace(start_pos, find.length(), replace);
 		start_pos += replace.length();
+	}
+	return(text);
+}
+std::string convertTrigonometry(std::string& text, const QString& replace)
+{
+	size_t start_pos = 0;
+	size_t br_pos;
+	int nested_brackets;
+	std::string function[3] = { "sin(", "cos(", "tan(" };
+	std::string replace_std;
+	if (replace == "DEG")
+		replace_std = "d2r(";
+	else
+		replace_std = "g2r(";
+	for (int i = 0; i < 3; i++)
+	{
+		while ((start_pos = text.find(function[i], start_pos)) != std::string::npos)
+		{
+			text.replace(start_pos, function[i].length(), function[i] + replace_std);
+			start_pos += replace_std.length();
+			br_pos = start_pos;
+			nested_brackets = 0;
+			while (text.at(br_pos - 1) != ')' || nested_brackets != 0)
+			{
+				if (text.at(br_pos) == '(')
+					nested_brackets += 1;
+				else if (text.at(br_pos) == ')' && nested_brackets == 1)
+				{
+					text.insert(br_pos, ")");
+					nested_brackets = 0;
+				}
+				else if (text.at(br_pos) == ')' && nested_brackets != 0)
+					nested_brackets -= 1;
+				br_pos += 1;
+			}
+		}
+		start_pos = 0;
 	}
 	return(text);
 }
@@ -604,17 +635,20 @@ void PiCalcQT::equalsClicked()
 	int crb = std::count(expression_str.begin(), expression_str.end(), ')');
 	if (clb > crb) {
 		for (int var = 0; var < clb - crb; ++var)
-			expression_str = expression_str + ")";
+			expression_str += ")";
 	}
 	display_h->setText(QString::fromStdString(expression_str));
 	/* Convert special symbols to normal symbols so tinyexpr can parse expression*/
-	preParseExpression(expression_str, std::string("!"), std::string("fac"));
-	preParseExpression(expression_str, std::string("×"), std::string("*"));
-	preParseExpression(expression_str, std::string("÷"), std::string("/"));
-	preParseExpression(expression_str, std::string("√"), std::string("sqrt"));
-	preParseExpression(expression_str, std::string("↑"), std::string("^"));
-	preParseExpression(expression_str, std::string("Mod"), std::string("%"));
-	preParseExpression(expression_str, std::string("π"), std::string("pi"));
+	replaceSymbols(expression_str, std::string("!"), std::string("fac"));
+	replaceSymbols(expression_str, std::string("×"), std::string("*"));
+	replaceSymbols(expression_str, std::string("÷"), std::string("/"));
+	replaceSymbols(expression_str, std::string("√"), std::string("sqrt"));
+	replaceSymbols(expression_str, std::string("↑"), std::string("^"));
+	replaceSymbols(expression_str, std::string("Mod"), std::string("%"));
+	replaceSymbols(expression_str, std::string("π"), std::string("pi"));
+	/* Convert GRAD or DEG to RAD if needed */
+	if (measureUnit != "RAD" && (expression_str.find("sin") != std::string::npos || expression_str.find("cos") != std::string::npos || expression_str.find("tan") != std::string::npos))
+		convertTrigonometry(expression_str, measureUnit);
 	display_h->setText(display_h->text() + "=");
 	std::stringstream stream;
 	long double result = te_interp(expression_str.c_str(), 0);
