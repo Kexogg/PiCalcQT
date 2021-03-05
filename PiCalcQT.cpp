@@ -302,7 +302,7 @@ void PiCalcQT::about()
 	about.setText("<b>About PiCalcQT</b>");
 	about.setInformativeText("<p>PiCalcQT is a calculator for Raspberry PI written in C++ and QT." \
 		"<br>See <a href=\"https://github.com/Kexogg/PiCalcQT\">my GitHub page</a> for updates or more information" \
-		"<br>Build " + QStringLiteral(__DATE__) + " " + QStringLiteral(__TIME__) + " - BETA 3.<br>© 2021 Alexander Mazhirin" \
+		"<br>Build " + QStringLiteral(__DATE__) + " " + QStringLiteral(__TIME__) + ".<br>© 2021 Alexander Mazhirin" \
 		"<br>This application uses modified version of <a href=\"https://codeplea.com/tinyexpr\">tinyexpr</a> by Lewis Van Winkle</p>");
 	about.setStandardButtons(QMessageBox::Ok);
 	about.setDefaultButton(QMessageBox::Ok);
