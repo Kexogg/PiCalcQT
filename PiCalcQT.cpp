@@ -118,7 +118,7 @@ void PiCalcQT::setupUI()
 	Button* ln = addButton("ln", SLOT(unaryOperatorClicked()));
 	Button* log = addButton("log", SLOT(unaryOperatorClicked()));
 	Button* mod = addButton("Mod", SLOT(operatorClicked()));
-	Button* multiplicativeinverse = addButton("1/x", SLOT(unaryOperatorClicked()));
+	Button* multiplicativeinverse = addButton("1/𝑥", SLOT(unaryOperatorClicked()));
 	Button* pi = addButton("π", SLOT(unaryOperatorClicked()));
 	Button* power = addButton("↑", SLOT(operatorClicked()));
 	Button* sin = addButton("sin", SLOT(unaryOperatorClicked()));
@@ -420,7 +420,7 @@ void PiCalcQT::unaryOperatorClicked()
 	{
 		queuedUnaryOperator = "!";
 	}
-	else if (queuedUnaryOperator == "1/x")
+	else if (queuedUnaryOperator == "1/𝑥")
 	{
 		if (operand == 0)
 		{
@@ -428,6 +428,10 @@ void PiCalcQT::unaryOperatorClicked()
 			return;
 		}
 		result = 1 / operand;
+		if (resetFlag) {
+			display_h->clear();
+			resetFlag = false;
+		}
 		historylock = true;
 	}
 	else if (queuedUnaryOperator == "e" || queuedUnaryOperator == "π")
@@ -659,6 +663,7 @@ void PiCalcQT::equalsClicked()
 	}
 	updateDisplayData(toQString(result));
 	resetFlag = true;
+	queuedOperator.clear();
 	queuedOperator.clear();
 }
 void PiCalcQT::abort()
